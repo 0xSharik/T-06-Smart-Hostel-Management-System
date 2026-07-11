@@ -1,0 +1,283 @@
+// prisma/schema.prisma — Database Schema
+//
+// This file defines the entire data model for the Smart Hostel Management System.
+// It is the single source of truth for all database tables.
+//
+// Key Design Decisions:
+//  - All IDs use cuid() for URL-safe, distributed-safe unique IDs
+//  - Soft deletes are NOT used — hard deletes keep the DB clean
+//  - All timestamps are in UTC (Prisma default)
+//  - Relations are explicit with onDelete policies
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  WARDEN
+  STUDENT
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  TRIPLE
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  FULL
+  MAINTENANCE
+}
+
+enum MaintenanceStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MaintenanceCategory {
+  ELECTRICAL
+  PLUMBING
+  FURNITURE
+  CLEANING
+  INTERNET
+  AC
+  OTHER
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  SNACK
+  DINNER
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum HolidayType {
+  PUBLIC
+  RESTRICTED
+  HOSTEL_SPECIFIC
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ALERT
+  MAINTENANCE
+  MESS
+  HOLIDAY
+  GENERAL
+}
+
+// ── Models ────────────────────────────────────────────────────────────────────
+
+/// User — The core authentication entity.
+/// A User can have a linked Student profile if their role is STUDENT.
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  student             Student?
+  notifications       Notification[]
+  maintenanceRequests MaintenanceRequest[]
+  messFeedbacks       MessFeedback[]
+  visitorLogs         Visitor[]            @relation("StudentVisitors")
+
+  @@map("users")
+}
+
+/// Room — A physical hostel room.
+model Room {
+  id        String     @id @default(cuid())
+  roomNo    String     @unique
+  floor     Int
+  type      RoomType   @default(SINGLE)
+  capacity  Int        @default(1)
+  occupancy Int        @default(0)
+  status    RoomStatus @default(AVAILABLE)
+  amenities String[]   @default([])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  students            Student[]
+  maintenanceRequests MaintenanceRequest[]
+
+  @@map("rooms")
+}
+
+/// Student — Extended profile for users with STUDENT role.
+/// Linked 1:1 with User, and 1:many with Room (one student per room at a time).
+model Student {
+  id           String   @id @default(cuid())
+  rollNo       String   @unique
+  course       String
+  year         Int
+  phone        String
+  parentName   String?
+  parentPhone  String?
+  address      String?
+  admissionDate DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roomId String?
+  room   Room?   @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  visitors Visitor[] @relation("VisitorStudent")
+
+  @@map("students")
+}
+
+/// Visitor — Log of all external visitors to students.
+model Visitor {
+  id       String    @id @default(cuid())
+  name     String
+  phone    String
+  relation String
+  purpose  String?
+  inTime   DateTime  @default(now())
+  outTime  DateTime?
+  date     DateTime  @default(now()) @db.Date
+  createdAt DateTime @default(now())
+
+  // Relations
+  studentId String
+  student   Student @relation("VisitorStudent", fields: [studentId], references: [id], onDelete: Cascade)
+
+  // The User (warden/admin) who logged this visitor
+  loggedById String?
+  loggedBy   User?   @relation("StudentVisitors", fields: [loggedById], references: [id], onDelete: SetNull)
+
+  @@map("visitors")
+}
+
+/// MaintenanceRequest — Complaints raised by students or staff.
+model MaintenanceRequest {
+  id          String              @id @default(cuid())
+  title       String
+  description String
+  category    MaintenanceCategory @default(OTHER)
+  status      MaintenanceStatus   @default(PENDING)
+  priority    MaintenancePriority @default(MEDIUM)
+  images      String[]            @default([])
+  resolvedAt  DateTime?
+  remarks     String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roomId String?
+  room   Room?   @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@map("maintenance_requests")
+}
+
+/// MessMenu — Weekly repeating mess schedule.
+/// Each entry represents a meal for a specific day and meal type.
+model MessMenu {
+  id          String    @id @default(cuid())
+  day         DayOfWeek
+  mealType    MealType
+  items       String[]  // Array of food items
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  feedbacks MessFeedback[]
+
+  // A day+mealType combination must be unique (one entry per slot)
+  @@unique([day, mealType])
+  @@map("mess_menus")
+}
+
+/// MessFeedback — Student feedback on mess meals.
+model MessFeedback {
+  id        String   @id @default(cuid())
+  rating    Int      // 1-5 stars
+  comment   String?
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  messMenuId String
+  messMenu   MessMenu @relation(fields: [messMenuId], references: [id], onDelete: Cascade)
+
+  @@map("mess_feedbacks")
+}
+
+/// Holiday — Hostel holiday calendar.
+model Holiday {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime    @db.Date
+  type        HolidayType @default(PUBLIC)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("holidays")
+}
+
+/// Notification — Announcements sent by admin/warden to users.
+model Notification {
+  id         String           @id @default(cuid())
+  title      String
+  message    String
+  type       NotificationType @default(GENERAL)
+  isRead     Boolean          @default(false)
+  targetRole Role?            // null = sent to a specific user; set = sent to a role
+  createdAt  DateTime         @default(now())
+
+  // Relations — the recipient user
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
