@@ -15,6 +15,18 @@ const ROOM_SELECT = {
   status: true,
   amenities: true,
   createdAt: true,
+  students: {
+    select: {
+      id: true,
+      rollNo: true,
+      course: true,
+      year: true,
+      phone: true,
+      parentName: true,
+      parentPhone: true,
+      user: { select: { name: true, email: true } },
+    },
+  },
   _count: { select: { students: true } },
 };
 

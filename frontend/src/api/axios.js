@@ -39,8 +39,8 @@ api.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("hostel-auth");
 
-      if (window.location.pathname !== "/login") {
-        window.location.replace("/login");
+      if (window.location.pathname !== "/") {
+        window.location.replace("/");
       }
 
       return Promise.reject(error);

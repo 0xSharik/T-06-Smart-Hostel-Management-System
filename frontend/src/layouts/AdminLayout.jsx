@@ -1,51 +1,68 @@
 /**
  * src/layouts/AdminLayout.jsx — Admin Interface Layout
- * Violet theme, admin-specific sidebar navigation
+ * Violet theme · Admin-only navigation (system-level control, NOT warden ops)
  */
 
 import { useState } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, Outlet } from "react-router-dom";
 import {
-  LayoutDashboard, Users, DoorOpen, UserCheck,
-  Wrench, UtensilsCrossed, CalendarDays, Bell, LogOut,
-  Settings, UserPlus, Building2, QrCode
+  LayoutDashboard,
+  Users,
+  UserCog,
+  Megaphone,
+  Database,
+  Settings2,
+  LogOut,
+  Building2,
+  FileBarChart2,
+  ClipboardList,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
 
 const adminNav = [
-  { section: "System Overview", items: [
-    { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  ]},
-  { section: "User & Access Management", items: [
-    { to: "/admin/users",     icon: Settings,  label: "User Accounts" },
-    { to: "/admin/students",  icon: Users,     label: "Students & Allotment" },
-  ]},
-  { section: "Hostel Management", items: [
-    { to: "/admin/rooms",       icon: DoorOpen, label: "Rooms & Heatmap" },
-    { to: "/admin/visitors",    icon: UserCheck, label: "Visitors & QR" },
-    { to: "/admin/maintenance", icon: Wrench,    label: "Maintenance & SLA" },
-  ]},
-  { section: "Services & Comms", items: [
-    { to: "/admin/mess",          icon: UtensilsCrossed, label: "Mess & Analytics" },
-    { to: "/admin/holidays",      icon: CalendarDays,    label: "Holidays" },
-    { to: "/admin/notifications", icon: Bell,            label: "Notifications & Broadcast" },
-  ]},
+  {
+    section: "System Overview",
+    items: [
+      { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard & Analytics" },
+      { to: "/admin/reports",   icon: FileBarChart2,   label: "System Reports" },
+    ],
+  },
+  {
+    section: "Access & Accounts",
+    items: [
+      { to: "/admin/users",    icon: UserCog,    label: "User Accounts & Roles" },
+      { to: "/admin/students", icon: Users,       label: "Students & Allotment" },
+    ],
+  },
+  {
+    section: "Communications",
+    items: [
+      { to: "/admin/notifications", icon: Megaphone,     label: "Broadcast & Announcements" },
+      { to: "/admin/holidays",      icon: ClipboardList, label: "Holiday Calendar" },
+    ],
+  },
+  {
+    section: "System Config",
+    items: [
+      { to: "/admin/config", icon: Settings2, label: "Hostel Configuration" },
+      { to: "/admin/audit",  icon: Database,   label: "Audit Logs" },
+    ],
+  },
 ];
 
 const pageTitles = {
-  "/admin/dashboard":     "Admin Dashboard",
-  "/admin/users":         "User Management",
-  "/admin/students":      "Students & Allotment",
-  "/admin/rooms":         "Rooms & Heatmap",
-  "/admin/visitors":      "Visitor Management",
-  "/admin/maintenance":   "Maintenance & SLA Reports",
-  "/admin/mess":          "Mess Analytics & Menu",
+  "/admin/dashboard":     "Admin Dashboard & Analytics",
+  "/admin/reports":       "System Reports",
+  "/admin/users":         "User Accounts & Roles",
+  "/admin/students":      "Students & Allotment Engine",
+  "/admin/notifications": "Broadcast & Announcements",
   "/admin/holidays":      "Holiday Calendar",
-  "/admin/notifications": "Notifications & Broadcast",
+  "/admin/config":        "Hostel Configuration",
+  "/admin/audit":         "Audit Logs",
 };
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -54,7 +71,7 @@ export default function AdminLayout({ children }) {
   const handleLogout = async () => {
     await logout();
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate("/");
   };
 
   const getInitials = (name) =>
@@ -71,12 +88,12 @@ export default function AdminLayout({ children }) {
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">
+          <div className="sidebar-logo-icon" style={{ background: "linear-gradient(135deg,#8b5cf6,#7c3aed)" }}>
             <Building2 size={20} color="white" />
           </div>
           <div>
             <div className="sidebar-logo-text">Admin Console</div>
-            <div className="sidebar-logo-sub">SmartHostel</div>
+            <div className="sidebar-logo-sub">SmartHostel System</div>
           </div>
         </div>
 
@@ -108,7 +125,7 @@ export default function AdminLayout({ children }) {
               <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user?.name}
               </div>
-              <span className="role-badge admin">Administrator</span>
+              <span className="role-badge admin">System Admin</span>
             </div>
           </div>
           <button className="nav-link" onClick={handleLogout} style={{ width: "100%", color: "var(--accent-danger)" }}>
@@ -128,7 +145,7 @@ export default function AdminLayout({ children }) {
           </div>
           <div className="header-right">
             <NavLink to="/admin/notifications">
-              <Bell size={20} color="var(--text-secondary)" />
+              <Megaphone size={20} color="var(--text-secondary)" />
             </NavLink>
             <div className="user-avatar" style={{ width: 32, height: 32, fontSize: "0.75rem", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}>
               {getInitials(user?.name)}
@@ -136,7 +153,7 @@ export default function AdminLayout({ children }) {
           </div>
         </header>
         <main className="page-content">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

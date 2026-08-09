@@ -29,7 +29,9 @@ const getOccupancyStatus = (occupancy, capacity) => {
  * Get all students (paginated + searchable)
  */
 const getAllStudents = async ({ page = 1, limit = 10, search = "", course = "", year = "" }) => {
-  const skip = (page - 1) * limit;
+  const pageNum  = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+  const skip     = Math.max(0, (pageNum - 1) * limitNum);
   const where = {
     AND: [
       search
@@ -47,7 +49,7 @@ const getAllStudents = async ({ page = 1, limit = 10, search = "", course = "", 
   };
 
   const [students, total] = await Promise.all([
-    prisma.student.findMany({ where, skip, take: parseInt(limit, 10), select: STUDENT_SELECT, orderBy: { createdAt: "desc" } }),
+    prisma.student.findMany({ where, skip, take: limitNum, select: STUDENT_SELECT, orderBy: { createdAt: "desc" } }),
     prisma.student.count({ where }),
   ]);
 

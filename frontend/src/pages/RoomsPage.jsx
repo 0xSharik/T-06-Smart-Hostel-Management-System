@@ -15,7 +15,7 @@ const STATUS_STYLES = {
   MAINTENANCE: "badge-danger",
 };
 
-const TYPE_LABELS = { SINGLE: "Single", DOUBLE: "Double", TRIPLE: "Triple" };
+const TYPE_LABELS = { SINGLE: "Single (1)", DOUBLE: "Double (2)", TRIPLE: "Triple (3)", QUAD: "Quad (4)", QUINT: "Quint (5)" };
 
 export default function RoomsPage() {
   const qc = useQueryClient();
@@ -86,11 +86,13 @@ export default function RoomsPage() {
           <option value="FULL">Full</option>
           <option value="MAINTENANCE">Maintenance</option>
         </select>
-        <select id="room-type-filter" className="form-select" style={{ width: 150 }} value={filter.type} onChange={e => { setFilter(f => ({ ...f, type: e.target.value })); setPage(1); }}>
+        <select id="room-type-filter" className="form-select" style={{ width: 160 }} value={filter.type} onChange={e => { setFilter(f => ({ ...f, type: e.target.value })); setPage(1); }}>
           <option value="">All Types</option>
-          <option value="SINGLE">Single</option>
-          <option value="DOUBLE">Double</option>
-          <option value="TRIPLE">Triple</option>
+          <option value="SINGLE">Single (1-seater)</option>
+          <option value="DOUBLE">Double (2-seater)</option>
+          <option value="TRIPLE">Triple (3-seater)</option>
+          <option value="QUAD">Quad (4-seater)</option>
+          <option value="QUINT">Quint (5-seater)</option>
         </select>
       </div>
 
@@ -198,9 +200,11 @@ export default function RoomsPage() {
                 <div className="form-group">
                   <label className="form-label">Type</label>
                   <select id="room-type" className="form-select" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
-                    <option value="SINGLE">Single</option>
-                    <option value="DOUBLE">Double</option>
-                    <option value="TRIPLE">Triple</option>
+                    <option value="SINGLE">Single (1-seater)</option>
+                    <option value="DOUBLE">Double (2-seater)</option>
+                    <option value="TRIPLE">Triple (3-seater)</option>
+                    <option value="QUAD">Quad (4-seater)</option>
+                    <option value="QUINT">Quint (5-seater)</option>
                   </select>
                 </div>
                 <div className="form-group">

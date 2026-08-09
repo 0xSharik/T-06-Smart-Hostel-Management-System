@@ -4,11 +4,11 @@
  */
 
 import { useState } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, Outlet } from "react-router-dom";
 import {
   LayoutDashboard, Users, DoorOpen, UserCheck,
   Wrench, UtensilsCrossed, CalendarDays, Bell, LogOut,
-  ShieldCheck
+  ShieldCheck, QrCode
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
@@ -18,19 +18,20 @@ const wardenNav = [
     { to: "/warden/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   ]},
   { section: "Residents", items: [
-    { to: "/warden/students", icon: Users,   label: "Students" },
-    { to: "/warden/rooms",    icon: DoorOpen, label: "Rooms & Map" },
+    { to: "/warden/students", icon: Users,    label: "Students" },
+    { to: "/warden/rooms",    icon: DoorOpen, label: "Rooms & Heatmap" },
+  ]},
+  { section: "Gate & Visitors", items: [
+    { to: "/warden/visitors", icon: UserCheck, label: "Visitor Logs" },
+    { to: "/warden/qr-scan",  icon: QrCode,    label: "QR Gate Scanner" },
   ]},
   { section: "Operations", items: [
-    { to: "/warden/visitors",    icon: UserCheck,  label: "Visitors" },
-    { to: "/warden/maintenance", icon: Wrench,     label: "Maintenance" },
+    { to: "/warden/maintenance", icon: Wrench,       label: "Maintenance Queue" },
     { to: "/warden/leave",       icon: CalendarDays, label: "Leave Approvals" },
   ]},
-  { section: "Mess", items: [
-    { to: "/warden/mess", icon: UtensilsCrossed, label: "Menu & Analytics" },
-  ]},
-  { section: "Account", items: [
-    { to: "/warden/notifications", icon: Bell, label: "Notifications" },
+  { section: "Services", items: [
+    { to: "/warden/mess",          icon: UtensilsCrossed, label: "Mess Management" },
+    { to: "/warden/notifications", icon: Bell,             label: "Notifications" },
   ]},
 ];
 
@@ -46,7 +47,7 @@ const pageTitles = {
   "/warden/notifications": "Notifications",
 };
 
-export default function WardenLayout({ children }) {
+export default function WardenLayout() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -55,7 +56,7 @@ export default function WardenLayout({ children }) {
   const handleLogout = async () => {
     await logout();
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate("/");
   };
 
   const getInitials = (name) =>
@@ -72,7 +73,7 @@ export default function WardenLayout({ children }) {
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">
+          <div className="sidebar-logo-icon" style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}>
             <ShieldCheck size={20} color="white" />
           </div>
           <div>
@@ -137,7 +138,7 @@ export default function WardenLayout({ children }) {
           </div>
         </header>
         <main className="page-content">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

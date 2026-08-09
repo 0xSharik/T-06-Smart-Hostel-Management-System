@@ -1101,3 +1101,244 @@ tbody td {
   50%       { border-color: #34d399; box-shadow: 0 0 0 9999px rgba(0,0,0,0.3), 0 0 20px rgba(16,185,129,0.4); }
 }
 
+/* ── Heatmap Grid ───────────────────────────────────────────────── */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 0.5rem;
+}
+
+/* Heatmap cell — base */
+.heatmap-cell {
+  aspect-ratio: 1.1;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  padding: 4px;
+  gap: 2px;
+}
+.heatmap-cell:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--shadow-lg);
+  z-index: 2;
+  border-color: var(--accent-primary) !important;
+}
+
+/* Cell content styling */
+.heatmap-cell-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  line-height: 1;
+}
+.heatmap-cell-roomno {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 6px;
+}
+.heatmap-cell-occ {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Heatmap cell colors based on state */
+.heatmap-cell.available {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+.heatmap-cell.available .heatmap-cell-occ {
+  color: #10b981;
+}
+
+.heatmap-cell.occupied {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+.heatmap-cell.occupied .heatmap-cell-occ {
+  color: #f59e0b;
+}
+
+.heatmap-cell.full {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.heatmap-cell.full .heatmap-cell-occ {
+  color: #ef4444;
+}
+
+.heatmap-cell.maintenance {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+.heatmap-cell.maintenance .heatmap-cell-roomno {
+  color: var(--text-muted);
+}
+
+/* Heatmap filter & headers style */
+.heatmap-filters {
+  display: flex;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--bg-card);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+.heatmap-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.heatmap-filter-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Room type strip at top */
+.heatmap-type-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+.heatmap-type-badge {
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid rgba(255,255,255,0.03);
+  position: relative;
+  overflow: hidden;
+}
+.heatmap-type-badge::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.heatmap-type-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.heatmap-type-count {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.heatmap-type-beds {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Legend with dots instead of blocks */
+.heatmap-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  align-items: center;
+}
+.heatmap-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+.heatmap-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.heatmap-legend-dot.available { background: #10b981; }
+.heatmap-legend-dot.occupied { background: #f59e0b; }
+.heatmap-legend-dot.full { background: #ef4444; }
+.heatmap-legend-dot.maintenance { background: #94a3b8; }
+.heatmap-legend-note {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Heatmap footer */
+.heatmap-footer {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* ── QR Scanner and Pass System ────────────────────────────────── */
+.qr-scan-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.qr-scan-header, .qr-generate-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.qr-section-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-section-icon.scan {
+  background: rgba(16, 185, 129, 0.08);
+}
+.qr-section-icon.generate {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.qr-section-body {
+  padding: 1.5rem;
+}
+
+.qr-result-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+.qr-result-card.success {
+  border-color: rgba(16, 185, 129, 0.2);
+  background: linear-gradient(135deg, rgba(16,185,129,0.04) 0%, rgba(5,150,105,0.02) 100%);
+}
+.qr-result-card.failed {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: linear-gradient(135deg, rgba(239,68,68,0.04) 0%, rgba(220,38,38,0.02) 100%);
+}
