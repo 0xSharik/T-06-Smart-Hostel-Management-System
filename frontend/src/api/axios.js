@@ -9,7 +9,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, ""),
+  baseURL: (import.meta.env.VITE_API_URL || "https://t-06-smart-hostel-management-system.onrender.com/api").replace(/\/$/, ""),
   withCredentials: true, // Send cookies automatically
   headers: {
     "Content-Type": "application/json",

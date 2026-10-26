@@ -18,5 +18,5 @@ This matrix maps the supplied T-06 requirements to the current implementation an
 | Role-based access | Auth middleware and per-route role middleware | Manual role matrix checklist; no automated API auth test yet | Implemented; acceptance pending |
 | Mobile responsive UI | Responsive CSS and layouts | Manual viewport check pending | Present; not yet verified |
 | Demo dataset of 100 rooms and 200 students | `backend/prisma/seed.js`, `seed-layout.js` | Unit test verifies counts/capacity; seed itself not run against live DB | Implemented; DB population pending |
-| Deployment guide and URL | `docs/DEPLOYMENT.md` | No deployment URL supplied | Guide present; deployment pending |
+| Deployment guide and URL | `docs/DEPLOYMENT.md`, production frontend at `https://hostel-delta-ten.vercel.app/admin/dashboard` | Production URL supplied by project owner; backend/database acceptance remains pending | Frontend deployed; end-to-end verification pending |
 | Demo video, final report, slides, progress evidence | Templates and presentation outline in `docs/` | Project team to capture and submit evidence | Templates present; evidence pending |

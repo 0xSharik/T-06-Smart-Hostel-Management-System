@@ -4,7 +4,9 @@ A role based web application for hostel room allocation, visitor entry, maintena
 
 ## Project status
 
-The repository contains a React/Vite frontend and a Node.js/Express/Prisma API backed by PostgreSQL. Core student, warden, and admin screens and APIs are implemented. A development seed now targets **100 rooms and 200 student records**. Automated tests cover the seed layout and room-allotment scoring. Database-backed end-to-end tests, deployment, field work, and presentation evidence still require a configured environment and project team activity; see [Testing](docs/TESTING.md) and [Project status](docs/PROJECT_STATUS.md).
+**Production frontend:** [Smart Hostel Management System — Admin Dashboard](https://hostel-delta-ten.vercel.app/admin/dashboard) (hosted on Vercel; sign in with an issued account).
+
+The repository contains a React/Vite frontend and a Node.js/Express/Prisma API backed by PostgreSQL. Core student, warden, and admin screens and APIs are implemented. A development seed now targets **100 rooms and 200 student records**. Automated tests cover the seed layout and room-allotment scoring. Database-backed end-to-end tests, field work, and presentation evidence still require a configured environment and project team activity; see [Testing](docs/TESTING.md) and [Project status](docs/PROJECT_STATUS.md).
 
 ## Features
 
@@ -70,7 +72,7 @@ These are public demo credentials. Never deploy seeded credentials or a seeded d
 
 ## Limitations and evidence
 
-The QR token can be captured by camera or pasted while offline, but the API must be reachable to verify the signature against the saved pass and record entry. No production deployment URL, QR demo video, field study evidence, or mentor approval is included in this source checkout. Do not present those deliverables as complete without collecting the evidence.
+The QR token can be captured by camera or pasted while offline, but the API must be reachable to verify the signature against the saved pass and record entry. The production frontend link is listed above; QR demo video, field study evidence, and mentor approval still need to be collected by the project team.
 
 ## License
 

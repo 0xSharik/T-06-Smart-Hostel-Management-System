@@ -4,7 +4,9 @@
 
 **Project:** T-06 Smart Hostel Management System  
 **Repository snapshot date:** 2026-10-26  
-**Status:** Core app, project documentation, and local automated test foundation present; database-backed acceptance and deployment evidence pending.
+**Status:** Core app and documentation are present; the production frontend URL has been supplied. Database-backed acceptance, backend verification, and presentation evidence remain pending.
+
+**Production frontend:** [https://hostel-delta-ten.vercel.app/admin/dashboard](https://hostel-delta-ten.vercel.app/admin/dashboard)
 
 ## Current implementation
 
@@ -34,7 +36,8 @@
 - [ ] Apply pending migrations to a disposable local DB and run seed.
 - [ ] Run functional role, CRUD, visitor QR, SLA, mess, and leave acceptance checks.
 - [ ] Capture QR demo video and SLA alert evidence.
-- [ ] Deploy and record a working URL if deployment is part of evaluation.
+- [x] Record the production frontend URL: [Admin Dashboard](https://hostel-delta-ten.vercel.app/admin/dashboard).
+- [ ] Verify production login, backend/API connectivity, database reads and writes, and role access.
 - [ ] Add actual progress reports, presentation slides, mentor feedback/approval, and any required field-work evidence.
 - [ ] Confirm final license and repository owner attribution before publishing.
 

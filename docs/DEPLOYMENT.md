@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This is a deployment checklist, not a claim that the project is currently deployed. No deployment URL or production environment was supplied.
+The production frontend is deployed at [https://hostel-delta-ten.vercel.app/admin/dashboard](https://hostel-delta-ten.vercel.app/admin/dashboard). The frontend origin for CORS is `https://hostel-delta-ten.vercel.app`. Configure the backend URL and database credentials in the hosting providers' environment settings; never commit secrets.
 
 ## Topology
 
@@ -12,7 +12,7 @@ This is a deployment checklist, not a claim that the project is currently deploy
 
 ## Example: Vercel frontend + Render API + Neon PostgreSQL
 
-This split deployment keeps the React site static and the Express service connected to PostgreSQL. Use the host URLs assigned to your project; this repository has not been deployed yet.
+This split deployment keeps the React site static and the Express service connected to PostgreSQL. The production frontend is `https://hostel-delta-ten.vercel.app`; use the actual backend URL assigned by Render.
 
 ### 1. Create the database
 
@@ -37,7 +37,7 @@ DIRECT_URL=<Neon direct, non-pooler URI>
 JWT_SECRET=<long random secret>
 JWT_EXPIRES_IN=7d
 COOKIE_SECRET=<different long random secret>
-FRONTEND_URL=https://<your-frontend-domain>
+FRONTEND_URL=https://hostel-delta-ten.vercel.app
 ```
 
 If more than one web instance is enabled, run the SLA monitor as a single worker instead of starting one copy per API process. The current server starts its in-process monitor on every instance.
@@ -50,7 +50,7 @@ Import the repository as a Vercel project and set **Root Directory** to `fronten
 VITE_API_URL=https://<your-render-service>.onrender.com/api
 ```
 
-The included `frontend/vercel.json` routes deep links (for example `/admin/users`) back to the Vite SPA entry point. After Vercel assigns the final domain, add that exact origin to Render's `FRONTEND_URL` and redeploy the API.
+The included `frontend/vercel.json` routes deep links (for example `/admin/users`) back to the Vite SPA entry point. Set `VITE_API_URL` in Vercel's frontend project environment to the Render API URL ending in `/api`, then redeploy the frontend. Set Render's `FRONTEND_URL` to `https://hostel-delta-ten.vercel.app` (add `http://localhost:5173` comma-separated only when local development needs access) and redeploy the API.
 
 ### 4. Apply schema and verify
 
