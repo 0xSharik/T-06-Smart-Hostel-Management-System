@@ -30,8 +30,9 @@ const setAuthCookie = (res, token) => {
  * POST /api/auth/register
  */
 const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
-  const { user, token } = await authService.registerUser({ name, email, password, role });
+  const { name, email, password } = req.body;
+  // Public registration must never grant privileged staff roles.
+  const { user, token } = await authService.registerUser({ name, email, password, role: "STUDENT" });
 
   setAuthCookie(res, token);
 

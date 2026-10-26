@@ -8,7 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { dashboardAPI } from "../../api";
 import { Link } from "react-router-dom";
 
-const PIE_COLORS = ["#10b981", "#6366f1", "#f59e0b", "#ef4444"];
+const PIE_COLORS = ["#07866f", "#c8102e", "#f59e0b", "#64748b"];
 
 export default function WardenDashboard() {
   const { data: statsRes } = useQuery("warden-dash-stats", dashboardAPI.getStats, { refetchInterval: 30000 });
@@ -93,7 +93,7 @@ export default function WardenDashboard() {
                 <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ background: "#161b27", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 8, color: "#f1f5f9" }} />
                 <Bar dataKey="occupied" name="Occupied Beds" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="available" name="Available Beds" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="available" name="Available Beds" fill="#07866f" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

@@ -16,6 +16,12 @@ export const authAPI = {
   changePassword: (data) => api.patch("/auth/change-password", data),
 };
 
+// ── User administration (admin only) ───────────────────────────────
+export const userAPI = {
+  getAll: (params) => api.get("/users", { params }),
+  create: (data) => api.post("/users", data),
+};
+
 // ── Students ────────────────────────────────────────────────────────
 export const studentAPI = {
   getAll: (params) => api.get("/students", { params }),

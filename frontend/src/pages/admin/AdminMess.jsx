@@ -70,10 +70,10 @@ export default function AdminMess() {
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={trendData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-            <XAxis dataKey="day" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} />
+            <XAxis dataKey="day" tick={{ fill: "var(--text-muted)", fontSize: 12 }} axisLine={false} />
             <YAxis domain={[1, 5]} tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} />
             <Tooltip contentStyle={{ background: "#161b27", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 8, color: "#f1f5f9" }} />
-            <Line type="monotone" dataKey="rating" name="Rating (1-5 ⭐)" stroke="#8b5cf6" strokeWidth={3} dot={{ fill: "#8b5cf6", r: 5 }} />
+            <Line type="monotone" dataKey="rating" name="Rating (1-5 ⭐)" stroke="#c8102e" strokeWidth={2} dot={{ fill: "#c8102e", r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

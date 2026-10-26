@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
+import ThemeToggle from "../components/ThemeToggle";
 
 const wardenNav = [
   { section: "Overview", items: [
@@ -129,6 +130,7 @@ export default function WardenLayout() {
             <span className="header-title">{title}</span>
           </div>
           <div className="header-right">
+            <ThemeToggle />
             <NavLink to="/warden/notifications">
               <Bell size={20} color="var(--text-secondary)" />
             </NavLink>

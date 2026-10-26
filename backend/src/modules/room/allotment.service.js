@@ -6,11 +6,7 @@
 
 const prisma = require("../../lib/prisma");
 const { AppError } = require("../../middleware/error.middleware");
-
-const getOccupancyStatus = (occupancy, capacity) => {
-  if (occupancy <= 0) return "AVAILABLE";
-  return occupancy >= capacity ? "FULL" : "OCCUPIED";
-};
+const { getOccupancyStatus, scoreRoom } = require("./room.rules");
 
 /**
  * Score & rank available rooms for a student based on preferences
@@ -34,38 +30,9 @@ const runAllotmentEngine = async ({ preferredFloor, preferredType, studentId }) 
     },
   });
 
-  const scoredRooms = availableRooms.map((room) => {
-    let score = 0;
-    const remainingBeds = room.capacity - room.occupancy;
-
-    if (remainingBeds <= 0) return null;
-
-    // 1. Floor match (Weight = 30 pts)
-    if (preferredFloor !== undefined && room.floor === parseInt(preferredFloor, 10)) {
-      score += 30;
-    }
-
-    // 2. Room Type match (Weight = 20 pts)
-    if (preferredType && room.type === preferredType) {
-      score += 20;
-    }
-
-    // 3. Batch / Course Proximity match (Weight = 15 pts if roommate has same course)
-    const sameCourseRoommates = room.students.filter((s) => s.course === student.course);
-    if (sameCourseRoommates.length > 0) {
-      score += 15;
-    }
-
-    // 4. Remaining capacity availability score (+10 pts per free bed)
-    score += remainingBeds * 10;
-
-    return {
-      room,
-      score,
-      matchPercentage: Math.min(100, Math.round((score / 75) * 100)),
-      remainingBeds,
-    };
-  }).filter(Boolean);
+  const scoredRooms = availableRooms
+    .map((room) => scoreRoom(room, student, { preferredFloor, preferredType }))
+    .filter(Boolean);
 
   // Sort by highest score
   scoredRooms.sort((a, b) => b.score - a.score);

@@ -12,8 +12,8 @@ const { JWT_SECRET } = require("../../config/env");
  * Generate a signed 8-hour QR Pass token and image data URL
  */
 const generateVisitorQR = async ({ studentId, name, phone, relation, purpose }, loggedById) => {
-  const student = await prisma.student.findUnique({
-    where: { id: studentId },
+  const student = await prisma.student.findFirst({
+    where: { OR: [{ id: studentId }, { rollNo: studentId }] },
     include: { user: { select: { name: true } }, room: { select: { roomNo: true } } },
   });
   if (!student) throw new AppError("Student profile not found.", 404);
@@ -24,7 +24,7 @@ const generateVisitorQR = async ({ studentId, name, phone, relation, purpose }, 
   // Signed payload
   const tokenPayload = {
     type: "VISITOR_PASS",
-    studentId,
+    studentId: student.id,
     visitorName: name,
     phone,
     exp: Math.floor(expiresAt.getTime() / 1000),
@@ -49,7 +49,7 @@ const generateVisitorQR = async ({ studentId, name, phone, relation, purpose }, 
   try {
     visitorRecord = await prisma.visitor.create({
       data: {
-        studentId,
+        studentId: student.id,
         name,
         phone,
         relation,
@@ -108,12 +108,13 @@ const scanVisitorQR = async (qrToken, guardUserId) => {
   }
 
   // Update inTime / loggedBy if not already logged
-  const updatedVisitor = await prisma.visitor.update({
-    where: { qrToken },
-    data: {
-      inTime: new Date(),
-      loggedById: guardUserId || existing.loggedById,
-    },
+  const claimed = await prisma.visitor.updateMany({
+    where: { id: existing.id, inTime: null, outTime: null, expiresAt: { gt: new Date() } },
+    data: { inTime: new Date(), loggedById: guardUserId || existing.loggedById },
+  });
+  if (!claimed.count) throw new AppError("This QR pass has expired or was already scanned.", 400);
+  const updatedVisitor = await prisma.visitor.findUnique({
+    where: { id: existing.id },
     include: { student: { select: { rollNo: true, user: { select: { name: true } }, room: { select: { roomNo: true } } } } },
   });
 

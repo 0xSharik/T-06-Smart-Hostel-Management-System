@@ -28,7 +28,7 @@ export default function StudentDashboard() {
   return (
     <div>
       {/* Welcome Banner */}
-      <div className="card" style={{ marginBottom: "var(--space-xl)", background: "linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.15) 100%)", borderColor: "var(--border-color)" }}>
+      <div className="card" style={{ marginBottom: "var(--space-xl)", background: "color-mix(in srgb, var(--accent-primary) 6%, var(--bg-card))", borderColor: "var(--border-color)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div>
             <h1 style={{ fontSize: "1.75rem", marginBottom: "0.25rem" }}>Welcome back, {user?.name}! 👋</h1>
@@ -45,7 +45,7 @@ export default function StudentDashboard() {
               </div>
             </div>
           ) : (
-            <div style={{ background: "rgba(245,158,11,0.1)", padding: "0.75rem 1.25rem", borderRadius: "var(--radius-lg)", border: "1px solid rgba(245,158,11,0.3)", color: "#fcd34d", fontSize: "0.875rem" }}>
+            <div style={{ background: "rgba(245,158,11,0.1)", padding: "0.75rem 1.25rem", borderRadius: "var(--radius-lg)", border: "1px solid rgba(245,158,11,0.3)", color: "#8a5a00", fontSize: "0.875rem" }}>
               ⚠️ Room unassigned — contact warden.
             </div>
           )}

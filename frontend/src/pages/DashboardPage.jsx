@@ -7,7 +7,7 @@ import { Users, DoorOpen, Wrench, UserCheck, CalendarDays, BedDouble, TrendingUp
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { dashboardAPI } from "../api";
 
-const PIE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444"];
+const PIE_COLORS = ["#c8102e", "#07866f", "#f59e0b", "#64748b"];
 
 function StatCard({ icon: Icon, value, label, colorClass }) {
   return (
@@ -72,7 +72,7 @@ export default function DashboardPage() {
                   contentStyle={{ background: "#1e2438", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, color: "#f1f5f9" }}
                   cursor={{ fill: "rgba(99,102,241,0.05)" }}
                 />
-                <Bar dataKey="occupied" name="Occupied" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="occupied" name="Occupied" fill="#c8102e" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="available" name="Available" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

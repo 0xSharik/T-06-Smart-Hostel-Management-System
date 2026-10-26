@@ -75,7 +75,7 @@ export default function NotificationsPage() {
                   gap: "1rem",
                   padding: "1rem 1.5rem",
                   borderBottom: idx < notifications.length - 1 ? "1px solid var(--border-subtle)" : "none",
-                  background: n.isRead ? "transparent" : "rgba(99, 102, 241, 0.04)",
+                  background: n.isRead ? "transparent" : "color-mix(in srgb, var(--accent-primary) 5%, var(--bg-card))",
                   transition: "background 0.2s ease",
                   cursor: !n.isRead ? "pointer" : "default",
                 }}

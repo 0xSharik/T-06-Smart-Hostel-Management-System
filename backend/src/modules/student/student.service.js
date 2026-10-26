@@ -28,7 +28,7 @@ const getOccupancyStatus = (occupancy, capacity) => {
 /**
  * Get all students (paginated + searchable)
  */
-const getAllStudents = async ({ page = 1, limit = 10, search = "", course = "", year = "" }) => {
+const getAllStudents = async ({ page = 1, limit = 10, search = "", course = "", year = "", unassignedOnly = false }) => {
   const pageNum  = Math.max(1, parseInt(page, 10) || 1);
   const limitNum = Math.max(1, parseInt(limit, 10) || 10);
   const skip     = Math.max(0, (pageNum - 1) * limitNum);
@@ -45,6 +45,7 @@ const getAllStudents = async ({ page = 1, limit = 10, search = "", course = "", 
         : {},
       course ? { course: { contains: course, mode: "insensitive" } } : {},
       year ? { year: parseInt(year, 10) } : {},
+      unassignedOnly ? { roomId: null } : {},
     ],
   };
 
@@ -127,41 +128,32 @@ const deleteStudent = async (id) => {
  * Assign a student to a room
  */
 const assignRoom = async (studentId, roomId) => {
-  const student = await prisma.student.findUnique({ where: { id: studentId } });
-  if (!student) throw new AppError("Student not found.", 404);
+  return prisma.$transaction(async (tx) => {
+    const student = await tx.student.findUnique({ where: { id: studentId } });
+    if (!student) throw new AppError("Student not found.", 404);
+    const room = await tx.room.findUnique({ where: { id: roomId } });
+    if (!room) throw new AppError("Room not found.", 404);
+    if (student.roomId === roomId) return tx.student.findUnique({ where: { id: studentId }, select: STUDENT_SELECT });
+    if (room.status === "MAINTENANCE") throw new AppError("Room is under maintenance and cannot be assigned.", 400);
 
-  const room = await prisma.room.findUnique({ where: { id: roomId } });
-  if (!room) throw new AppError("Room not found.", 404);
-  if (room.status === "MAINTENANCE") throw new AppError("Room is under maintenance and cannot be assigned.", 400);
-  if (room.occupancy >= room.capacity) throw new AppError("Room is full.", 400);
-
-  // Unassign from current room if assigned
-  if (student.roomId && student.roomId !== roomId) {
-    const currentRoom = await prisma.room.findUnique({ where: { id: student.roomId } });
-    const nextOccupancy = Math.max((currentRoom?.occupancy || 1) - 1, 0);
-    await prisma.room.update({
-      where: { id: student.roomId },
-      data: {
-        occupancy: nextOccupancy,
-        status: currentRoom?.status === "MAINTENANCE" ? "MAINTENANCE" : getOccupancyStatus(nextOccupancy, currentRoom?.capacity || 1),
-      },
+    // The conditional update prevents concurrent assignments from exceeding capacity.
+    const claimed = await tx.room.updateMany({
+      where: { id: roomId, status: { not: "MAINTENANCE" }, occupancy: { lt: room.capacity } },
+      data: { occupancy: { increment: 1 } },
     });
-  }
+    if (!claimed.count) throw new AppError("Room is full or under maintenance.", 400);
+    const updatedRoom = await tx.room.findUnique({ where: { id: roomId } });
+    await tx.room.update({ where: { id: roomId }, data: { status: getOccupancyStatus(updatedRoom.occupancy, updatedRoom.capacity) } });
 
-  const newOccupancy = student.roomId === roomId ? room.occupancy : room.occupancy + 1;
-
-  const [updatedStudent] = await prisma.$transaction([
-    prisma.student.update({ where: { id: studentId }, data: { roomId }, select: STUDENT_SELECT }),
-    prisma.room.update({
-      where: { id: roomId },
-      data: {
-        occupancy: newOccupancy,
-        status: getOccupancyStatus(newOccupancy, room.capacity),
-      },
-    }),
-  ]);
-
-  return updatedStudent;
+    if (student.roomId) {
+      const previous = await tx.room.findUnique({ where: { id: student.roomId } });
+      if (previous) {
+        const nextOccupancy = Math.max(previous.occupancy - 1, 0);
+        await tx.room.update({ where: { id: previous.id }, data: { occupancy: nextOccupancy, status: previous.status === "MAINTENANCE" ? "MAINTENANCE" : getOccupancyStatus(nextOccupancy, previous.capacity) } });
+      }
+    }
+    return tx.student.update({ where: { id: studentId }, data: { roomId }, select: STUDENT_SELECT });
+  });
 };
 
 /**

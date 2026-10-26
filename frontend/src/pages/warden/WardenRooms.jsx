@@ -35,7 +35,7 @@ export default function WardenRooms() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedStudentToAssign, setSelectedStudentToAssign] = useState("");
 
-  const { data: roomsRes, isLoading, refetch } = useQuery(
+  const { data: roomsRes, isLoading, isError: roomsError, error: roomsErrorDetail, refetch } = useQuery(
     "warden-all-rooms",
     () => roomAPI.getAll({ limit: 9999 }),
     { refetchOnWindowFocus: false }
@@ -43,17 +43,22 @@ export default function WardenRooms() {
 
   const { data: unassignedRes } = useQuery(
     "unassigned-students-list",
-    () => studentAPI.getAll({ limit: 9999 }),
+    () => studentAPI.getAll({ limit: 9999, unassigned: true }),
     { enabled: !!selectedRoom }
   );
 
+  const { data: roomDetailRes, isLoading: roomDetailLoading, isError: roomDetailError, refetch: refetchRoomDetail } = useQuery(
+    ["warden-room-detail", selectedRoom?.id],
+    () => roomAPI.getById(selectedRoom.id),
+    { enabled: !!selectedRoom?.id }
+  );
+
   const rooms = roomsRes?.data?.data || [];
-  const allStudents = unassignedRes?.data?.data || [];
-  const unassignedStudents = allStudents.filter(s => !s.room);
+  const unassignedStudents = unassignedRes?.data?.data || [];
 
   // Keep active selectedRoom state updated when queries refetch
   const liveSelectedRoom = selectedRoom
-    ? rooms.find(r => r.id === selectedRoom.id) || selectedRoom
+    ? roomDetailRes?.data?.data || rooms.find(r => r.id === selectedRoom.id) || selectedRoom
     : null;
 
   const assignMutation = useMutation(
@@ -63,6 +68,12 @@ export default function WardenRooms() {
         toast.success("Student assigned to room successfully!");
         qc.invalidateQueries("warden-all-rooms");
         qc.invalidateQueries("unassigned-students-list");
+        qc.invalidateQueries("warden-room-detail");
+        qc.invalidateQueries("room-stats");
+        qc.invalidateQueries("floor-occupancy");
+        qc.invalidateQueries("warden-floor-occupancy");
+        qc.invalidateQueries("dashboard-stats");
+        qc.invalidateQueries("warden-dash-stats");
         setSelectedStudentToAssign("");
       },
       onError: (e) => toast.error(e.response?.data?.message || "Failed to assign room."),
@@ -76,6 +87,12 @@ export default function WardenRooms() {
         toast.success("Student unassigned from room.");
         qc.invalidateQueries("warden-all-rooms");
         qc.invalidateQueries("unassigned-students-list");
+        qc.invalidateQueries("warden-room-detail");
+        qc.invalidateQueries("room-stats");
+        qc.invalidateQueries("floor-occupancy");
+        qc.invalidateQueries("warden-floor-occupancy");
+        qc.invalidateQueries("dashboard-stats");
+        qc.invalidateQueries("warden-dash-stats");
       },
       onError: (e) => toast.error(e.response?.data?.message || "Failed to unassign student."),
     }
@@ -108,7 +125,7 @@ export default function WardenRooms() {
     return acc;
   }, {});
 
-  const floors    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const floors    = [...new Set(rooms.map((room) => room.floor))].sort((a, b) => a - b);
   const roomTypes = ["SINGLE", "DOUBLE", "TRIPLE", "QUAD", "QUINT"];
 
   const handleAssign = (e) => {
@@ -222,6 +239,13 @@ export default function WardenRooms() {
       <div className="card" style={{ padding: "1.25rem" }}>
         {isLoading ? (
           <div className="loading-center"><div className="spinner" /></div>
+        ) : roomsError ? (
+          <div className="empty-state">
+            <DoorOpen size={40} />
+            <h3>Could not load the room map</h3>
+            <p>{roomsErrorDetail?.response?.data?.message || "The server connection was interrupted. Check that the API is running, then retry."}</p>
+            <button className="btn btn-secondary" onClick={() => refetch()}>Retry</button>
+          </div>
         ) : filteredRooms.length > 0 ? (
           <div className="heatmap-grid">
             {filteredRooms.map((room) => (
@@ -256,7 +280,7 @@ export default function WardenRooms() {
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <div style={{
                   width: 42, height: 42, borderRadius: "var(--radius-md)",
-                  background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+                  background: "#c8102e",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontWeight: 800, fontSize: "1.125rem"
                 }}>
@@ -311,7 +335,14 @@ export default function WardenRooms() {
                   <Users size={16} color="var(--accent-primary)" /> Room Occupants ({liveSelectedRoom.students?.length || 0})
                 </h3>
 
-                {liveSelectedRoom.students && liveSelectedRoom.students.length > 0 ? (
+                {roomDetailLoading ? (
+                  <div className="loading-center"><div className="spinner" /></div>
+                ) : roomDetailError ? (
+                  <div className="empty-state">
+                    <p>Could not load this room's occupants.</p>
+                    <button className="btn btn-secondary btn-sm" onClick={() => refetchRoomDetail()}>Retry</button>
+                  </div>
+                ) : liveSelectedRoom.students && liveSelectedRoom.students.length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
                     {liveSelectedRoom.students.map((student) => (
                       <div key={student.id} style={{

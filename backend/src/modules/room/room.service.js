@@ -30,6 +30,19 @@ const ROOM_SELECT = {
   _count: { select: { students: true } },
 };
 
+const ROOM_LIST_SELECT = {
+  id: true,
+  roomNo: true,
+  floor: true,
+  type: true,
+  capacity: true,
+  occupancy: true,
+  status: true,
+  amenities: true,
+  createdAt: true,
+  _count: { select: { students: true } },
+};
+
 const getAllRooms = async ({ page = 1, limit = 20, floor, type, status }) => {
   const skip = (page - 1) * limit;
   const where = {
@@ -39,7 +52,7 @@ const getAllRooms = async ({ page = 1, limit = 20, floor, type, status }) => {
   };
 
   const [rooms, total] = await Promise.all([
-    prisma.room.findMany({ where, skip, take: parseInt(limit, 10), select: ROOM_SELECT, orderBy: [{ floor: "asc" }, { roomNo: "asc" }] }),
+    prisma.room.findMany({ where, skip, take: parseInt(limit, 10), select: ROOM_LIST_SELECT, orderBy: [{ floor: "asc" }, { roomNo: "asc" }] }),
     prisma.room.count({ where }),
   ]);
 
@@ -57,6 +70,8 @@ const getRoomById = async (id) => {
           rollNo: true,
           course: true,
           year: true,
+          phone: true,
+          parentPhone: true,
           user: { select: { name: true, email: true } },
         },
       },

@@ -1,47 +1,48 @@
 /* ===================================================================
-   src/index.css — Global Design System
+   src/index.css — Global Design System (Redesigned)
    Smart Hostel Management System
    =================================================================== */
 
 /* ── CSS Custom Properties (Design Tokens) ──────────────────────── */
 :root {
-  /* Color Palette — Dark Theme */
-  --bg-primary:    #0f1117;
-  --bg-secondary:  #161b27;
-  --bg-card:       #1e2438;
-  --bg-card-hover: #252d45;
-  --bg-input:      #1a2035;
+  /* Color Palette — Light Theme */
+  color-scheme: light;
+  --bg-primary:    #f4f6f9;
+  --bg-secondary:  #edf1f6;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #fafbfc;
+  --bg-input:      #f7f8fa;
 
   /* Brand Colors */
-  --accent-primary:    #6366f1;  /* Indigo */
-  --accent-secondary:  #8b5cf6;  /* Violet */
+  --accent-primary:    #c8102e;  /* Campus crimson */
+  --accent-secondary:  #9f1239;
   --accent-success:    #10b981;  /* Emerald */
   --accent-warning:    #f59e0b;  /* Amber */
   --accent-danger:     #ef4444;  /* Red */
   --accent-info:       #3b82f6;  /* Blue */
 
   /* Gradients */
-  --gradient-brand: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --gradient-card:  linear-gradient(145deg, #1e2438 0%, #252d45 100%);
+  --gradient-brand: #c8102e;
+  --gradient-card:  linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
   --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
   --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   --gradient-danger:  linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 
   /* Text Colors */
-  --text-primary:   #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted:     #64748b;
-  --text-inverse:   #0f1117;
+  --text-primary:   #202b3e;
+  --text-secondary: #526176;
+  --text-muted:     #77859a;
+  --text-inverse:   #ffffff;
 
   /* Border */
-  --border-color:   rgba(99, 102, 241, 0.15);
-  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-color:   rgba(200, 16, 46, 0.2);
+  --border-subtle:  rgba(41, 55, 76, 0.1);
 
   /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+  --shadow-sm:  2px 2px 5px rgba(30, 45, 65, 0.08), -2px -2px 5px rgba(255, 255, 255, 0.82);
+  --shadow-md:  5px 6px 14px rgba(37, 51, 70, 0.1), -4px -4px 12px rgba(255, 255, 255, 0.8);
+  --shadow-lg:  8px 10px 22px rgba(37, 51, 70, 0.13), -6px -6px 18px rgba(255, 255, 255, 0.78);
+  --shadow-glow: 0 0 18px rgba(200, 16, 46, 0.18);
 
   /* Spacing */
   --space-xs:  0.25rem;
@@ -72,6 +73,29 @@
   --header-height: 64px;
 }
 
+/* Explicit, persistent theme preference */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg-primary:    #0f1117;
+    --bg-secondary:  #161b27;
+    --bg-card:       #1e2438;
+    --bg-card-hover: #252d45;
+    --bg-input:      #1a2035;
+    --gradient-brand: #ed4761;
+    --text-primary:   #f1f5f9;
+    --text-secondary: #b1bdcc;
+    --text-muted:     #a1aec0;
+    --text-inverse:   #0f1117;
+    --border-color:   rgba(237, 71, 97, 0.24);
+    --border-subtle:  rgba(255, 255, 255, 0.06);
+    --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 18px rgba(237, 71, 97, 0.18);
+    --bg-card:       #1e2438;
+    --bg-card-hover: #252d45;
+}
+
 /* ── Reset & Base ───────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -93,6 +117,12 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent-primary) 55%, transparent);
+  outline-offset: 2px;
 }
 
 #root {
@@ -154,11 +184,14 @@ a:hover { color: var(--accent-secondary); }
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
-  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .card:hover {
   background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .card-header {
@@ -200,12 +233,12 @@ a:hover { color: var(--accent-secondary); }
 .btn-primary {
   background: var(--gradient-brand);
   color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 3px 8px rgba(150, 12, 38, 0.2), inset 0 1px 0 rgba(255,255,255,.18);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 5px 14px rgba(150, 12, 38, 0.24);
 }
 
 .btn-secondary {
@@ -282,7 +315,7 @@ a:hover { color: var(--accent-secondary); }
 .form-select:focus,
 .form-textarea:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
 .form-input::placeholder {
@@ -371,7 +404,7 @@ a:hover { color: var(--accent-secondary); }
   line-height: 1;
 }
 
-.badge-indigo   { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.badge-indigo   { background: rgba(200, 16, 46, 0.1); color: var(--accent-primary); }
 .badge-success  { background: rgba(16, 185, 129, 0.15); color: #34d399; }
 .badge-warning  { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
 .badge-danger   { background: rgba(239, 68, 68, 0.15); color: #f87171; }
@@ -508,12 +541,12 @@ tbody td {
 }
 
 .nav-link:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: color-mix(in srgb, var(--accent-primary) 7%, var(--bg-card));
   color: var(--text-primary);
 }
 
 .nav-link.active {
-  background: rgba(99, 102, 241, 0.15);
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-card));
   color: var(--accent-primary);
   box-shadow: inset 2px 0 0 var(--accent-primary);
 }
@@ -539,8 +572,8 @@ tbody td {
   left: var(--sidebar-width);
   right: 0;
   height: var(--header-height);
-  background: rgba(15, 17, 23, 0.85);
-  backdrop-filter: blur(12px);
+  background: var(--bg-card);
+  backdrop-filter: none;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -749,7 +782,7 @@ tbody td {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent-primary) 8%, transparent) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -791,11 +824,11 @@ tbody td {
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(82, 97, 118, 0.28);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
+  background: rgba(82, 97, 118, 0.5);
 }
 
 /* ── Responsive ─────────────────────────────────────────────────── */
@@ -814,46 +847,54 @@ tbody td {
   .hamburger { display: flex !important; }
 }
 
+/* Consistent tactile controls and overflow-safe data views */
+.stat-card, .modal, .login-card, .table-wrapper, .filter-bar, .page-header {
+  box-shadow: var(--shadow-sm);
+}
+.table-wrapper { background: var(--bg-card); }
+thead { background: var(--bg-secondary); }
+tbody tr:hover { background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card)); }
+.nav-link { min-height: 42px; }
+.nav-link.active { background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-card)); }
+.header { box-shadow: 0 2px 8px rgba(27,40,59,.04); }
+.sidebar { background: var(--bg-card); box-shadow: 3px 0 14px rgba(30,45,65,.04); }
+.stat-card { background: var(--bg-card); border-radius: 18px; }
+.stat-card::before { background: var(--accent-primary); }
+.card { border-radius: 18px; }
+.modal { box-shadow: var(--shadow-lg); }
+.heatmap-cell { border-radius: 10px; }
+.page-header { box-shadow: none; }
+
+@media (max-width: 768px) {
+  :root { --header-height: 58px; --sidebar-width: min(84vw, 300px); }
+  .page-content { padding-inline: 1rem; }
+  .header { padding-inline: .85rem; }
+  .header-title { max-width: min(62vw, 420px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem; }
+  .header-right { gap: .65rem; }
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: minmax(0,1fr); }
+  .stat-card { padding: 1rem; }
+  .page-header { align-items: flex-start; }
+  .table-wrapper { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .modal-overlay { padding: .75rem; align-items: flex-end; }
+  .modal { max-height: min(88vh, 760px); border-radius: 20px 20px 14px 14px; padding: 1rem; }
+}
+@media (max-width: 420px) {
+  .header-title { max-width: 48vw; }
+  .user-avatar { width: 32px; height: 32px; }
+  .theme-toggle { width: 36px; height: 36px; }
+  .pagination { padding-inline: .8rem; }
+}
+
 /* ── Role-Specific Color Themes ─────────────────────────────────── */
 /* Student theme — Indigo (default, no override needed) */
 
-/* Warden theme — Emerald */
-.role-warden {
-  --accent-primary:   #10b981;
-  --accent-secondary: #059669;
-  --gradient-brand:   linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --border-color:     rgba(16, 185, 129, 0.2);
-  --shadow-glow:      0 0 20px rgba(16, 185, 129, 0.25);
-}
-.role-warden .nav-link.active {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
-  box-shadow: inset 2px 0 0 #10b981;
-}
-.role-warden .btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-.role-warden .btn-primary:hover { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
+/* Warden actions use teal as a semantic accent while the global identity stays crimson. */
+.role-warden { --accent-primary: #07866f; --accent-secondary: #08715f; --gradient-brand: #08715f; --border-color: rgba(7,134,111,.2); --shadow-glow: 0 0 18px rgba(7,134,111,.18); }
+.role-warden .nav-link.active { background: rgba(7,134,111,.11); color: var(--accent-primary); box-shadow: inset 3px 0 0 var(--accent-primary); }
 
-/* Admin theme — Violet */
-.role-admin {
-  --accent-primary:   #8b5cf6;
-  --accent-secondary: #7c3aed;
-  --gradient-brand:   linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  --border-color:     rgba(139, 92, 246, 0.2);
-  --shadow-glow:      0 0 20px rgba(139, 92, 246, 0.25);
-}
-.role-admin .nav-link.active {
-  background: rgba(139, 92, 246, 0.12);
-  color: #8b5cf6;
-  box-shadow: inset 2px 0 0 #8b5cf6;
-}
-.role-admin .btn-primary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-}
-.role-admin .btn-primary:hover { box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); }
+/* Admin shares campus identity; use crimson for navigation and primary actions. */
+.role-admin { --accent-primary: #c8102e; --accent-secondary: #9f1239; --gradient-brand: #c8102e; --border-color: rgba(200,16,46,.2); --shadow-glow: 0 0 18px rgba(200,16,46,.18); }
+.role-admin .nav-link.active { background: rgba(200,16,46,.1); color: var(--accent-primary); box-shadow: inset 3px 0 0 var(--accent-primary); }
 
 /* ── Hamburger Button ───────────────────────────────────────────── */
 .hamburger {
@@ -1101,7 +1142,7 @@ tbody td {
   50%       { border-color: #34d399; box-shadow: 0 0 0 9999px rgba(0,0,0,0.3), 0 0 20px rgba(16,185,129,0.4); }
 }
 
-/* ── Heatmap Grid ───────────────────────────────────────────────── */
+/* ── Heatmap Grid (second definition) ───────────────────────────── */
 .heatmap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
@@ -1162,7 +1203,6 @@ tbody td {
 .heatmap-cell.available .heatmap-cell-occ {
   color: #10b981;
 }
-
 .heatmap-cell.occupied {
   background: rgba(245, 158, 11, 0.08);
   border-color: rgba(245, 158, 11, 0.2);
@@ -1170,7 +1210,6 @@ tbody td {
 .heatmap-cell.occupied .heatmap-cell-occ {
   color: #f59e0b;
 }
-
 .heatmap-cell.full {
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
@@ -1178,7 +1217,6 @@ tbody td {
 .heatmap-cell.full .heatmap-cell-occ {
   color: #ef4444;
 }
-
 .heatmap-cell.maintenance {
   background: rgba(148, 163, 184, 0.08);
   border-color: rgba(148, 163, 184, 0.2);
@@ -1301,7 +1339,6 @@ tbody td {
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
-
 .qr-scan-header, .qr-generate-header {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border-subtle);
@@ -1309,7 +1346,6 @@ tbody td {
   align-items: center;
   gap: 0.875rem;
 }
-
 .qr-section-icon {
   width: 36px;
   height: 36px;
@@ -1322,13 +1358,11 @@ tbody td {
   background: rgba(16, 185, 129, 0.08);
 }
 .qr-section-icon.generate {
-  background: rgba(99, 102, 241, 0.08);
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
 }
-
 .qr-section-body {
   padding: 1.5rem;
 }
-
 .qr-result-card {
   border-radius: var(--radius-xl);
   border: 1px solid transparent;

@@ -13,6 +13,7 @@ import {
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
 import Header from "../components/Header";
+import ThemeToggle from "../components/ThemeToggle";
 
 const studentNav = [
   { section: "My Space", items: [
@@ -125,6 +126,7 @@ export default function StudentLayout({ children }) {
             <span className="header-title">{title}</span>
           </div>
           <div className="header-right">
+            <ThemeToggle />
             <NavLink to="/student/notifications">
               <Bell size={20} color="var(--text-secondary)" />
             </NavLink>

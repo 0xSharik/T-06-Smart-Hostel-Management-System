@@ -60,7 +60,7 @@ const getVisitorsByStudent = async (studentId, { page = 1, limit = 10 }) => {
 };
 
 const logVisitorEntry = async ({ studentId, name, phone, relation, purpose }, loggedById) => {
-  const student = await prisma.student.findUnique({ where: { id: studentId } });
+  const student = await prisma.student.findFirst({ where: { OR: [{ id: studentId }, { rollNo: studentId }] } });
   if (!student) throw new AppError("Student not found.", 404);
 
   return await prisma.visitor.create({
@@ -72,13 +72,12 @@ const logVisitorEntry = async ({ studentId, name, phone, relation, purpose }, lo
 const logVisitorExit = async (id) => {
   const visitor = await prisma.visitor.findUnique({ where: { id } });
   if (!visitor) throw new AppError("Visitor record not found.", 404);
+  if (!visitor.inTime) throw new AppError("Visitor has not checked in yet.", 400);
   if (visitor.outTime) throw new AppError("Exit time already recorded for this visitor.", 400);
 
-  return await prisma.visitor.update({
-    where: { id },
-    data: { outTime: new Date() },
-    select: VISITOR_SELECT,
-  });
+  const result = await prisma.visitor.updateMany({ where: { id, inTime: { not: null }, outTime: null }, data: { outTime: new Date() } });
+  if (!result.count) throw new AppError("Visitor entry has already been closed.", 400);
+  return prisma.visitor.findUnique({ where: { id }, select: VISITOR_SELECT });
 };
 
 const getTodayVisitorCount = async () => {

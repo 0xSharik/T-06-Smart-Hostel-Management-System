@@ -1,331 +1,124 @@
-/**
- * src/pages/LandingPage.jsx — Public landing page for Smart Hostel Management System
- */
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Mail, Lock, LogIn, ShieldCheck, UserRound, GraduationCap } from "lucide-react";
+import {
+  ArrowRight, BedDouble, Building2, ChefHat, CircleCheck, Clock3,
+  GraduationCap, KeyRound, LogIn, Mail, QrCode, ShieldCheck, UsersRound, Wrench,
+} from "lucide-react";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
-import "./LandingPage.css"; // Import our custom CSS for this page
+import ThemeToggle from "../components/ThemeToggle";
+import "./LandingPage.css";
 
 const roleOptions = [
-  {
-    role: "ADMIN",
-    title: "Admin",
-    description: "Users, rooms, reports",
-    email: "admin@hostel.com",
-    password: "Admin@1234",
-    path: "/admin/dashboard",
-    icon: ShieldCheck,
-  },
-  {
-    role: "WARDEN",
-    title: "Warden",
-    description: "Visitors, rooms, tickets",
-    email: "warden@hostel.com",
-    password: "Warden@1234",
-    path: "/warden/dashboard",
-    icon: UserRound,
-  },
-  {
-    role: "STUDENT",
-    title: "Student",
-    description: "Room, mess, leave",
-    email: "student1@hostel.com",
-    password: "Student@1234",
-    path: "/student/dashboard",
-    icon: GraduationCap,
-  },
+  { role: "STUDENT", title: "Student", description: "Your room and hostel services", icon: GraduationCap },
+  { role: "WARDEN", title: "Warden", description: "Daily hostel operations", icon: ShieldCheck },
+  { role: "ADMIN", title: "Administrator", description: "People, rooms and reports", icon: UsersRound },
 ];
 
-const getRolePath = (role) => {
+const workflowFeatures = [
+  { icon: BedDouble, title: "Rooms & occupancy", text: "Keep room assignments, bed availability, and student records in sync." },
+  { icon: QrCode, title: "Visitor passes", text: "Issue time-limited QR passes and keep a searchable entry and exit record." },
+  { icon: Wrench, title: "Maintenance requests", text: "Track priority, ownership, progress, and 48-hour SLA breaches." },
+  { icon: ChefHat, title: "Mess & holidays", text: "Collect dish ratings and manage holiday checkout and return confirmation." },
+];
+
+const roleDetails = [
+  { role: "STUDENT", icon: GraduationCap, title: "For students", text: "Take care of hostel tasks without chasing paper forms.", points: ["View room and profile details", "Request maintenance and visitor passes", "Rate meals and submit holiday plans"] },
+  { role: "WARDEN", icon: ShieldCheck, title: "For wardens", text: "See what needs attention and record each decision.", points: ["Monitor occupancy and visitor activity", "Review leave and pass requests", "Assign maintenance and watch SLA status"] },
+  { role: "ADMIN", icon: UsersRound, title: "For administrators", text: "Keep access, student records, and room setup organized.", points: ["Manage accounts and role access", "Maintain student and room records", "Review system activity and reports"] },
+];
+
+function rolePath(role) {
   if (role === "ADMIN") return "/admin/dashboard";
   if (role === "WARDEN") return "/warden/dashboard";
   return "/student/dashboard";
-};
+}
 
 export default function LandingPage() {
-  const [selectedRole, setSelectedRole] = useState(roleOptions[1]);
-  const [email, setEmail] = useState(roleOptions[1].email);
-  const [password, setPassword] = useState(roleOptions[1].password);
+  const [selectedRole, setSelectedRole] = useState(roleOptions[0]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
-  const selectRole = (option) => {
+  function selectRole(option) {
     setSelectedRole(option);
-    setEmail(option.email);
-    setPassword(option.password);
-  };
+    setEmail("");
+    setPassword("");
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
+  async function handleSubmit(event) {
+    event.preventDefault();
     const result = await login(email, password);
     if (result.success) {
       const user = useAuthStore.getState().user;
       toast.success("Welcome back!");
-      navigate(getRolePath(user?.role || selectedRole.role), { replace: true });
+      navigate(rolePath(user?.role || selectedRole.role), { replace: true });
     } else {
       toast.error(result.message || "Login failed");
     }
-  };
+  }
 
   return (
-    <div className="landing-page">
-      {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-content">
-          <h1>Smart Hostel Management</h1>
-          <p>
-            Streamline hostel operations with role‑based dashboards for students, wardens, and administrators.
-          </p>
-          <div className="hero-actions">
-            <a href="#features" className="btn btn-primary">Explore Features</a>
-            <button
-              onClick={() => document.getElementById("login-section")?.scrollIntoView({ behavior: "smooth" })}
-              className="btn btn-secondary"
-            >
-              Login Demo
-            </button>
-          </div>
-        </div>
-        {/* Animated background shapes */}
-        <div className="hero-bg">
-          <div className="shape shape-1"></div>
-          <div className="shape shape-2"></div>
-        </div>
-      </section>
+    <div className="landing-page home-redesign">
+      <header className="home-header">
+        <a className="home-brand" href="#home" aria-label="SmartHostel home"><span className="home-brand-mark"><Building2 size={20} /></span><span>Smart<span>Hostel</span></span></a>
+        <nav className="home-nav" aria-label="Main navigation"><a href="#workflows">How it works</a><a href="#portals">Portals</a></nav>
+        <div className="home-header-actions"><ThemeToggle /><a className="home-header-cta" href="#sign-in">Sign in <ArrowRight size={16} /></a></div>
+      </header>
 
-      {/* Features Section */}
-      <section id="features" className="features">
-        <div className="features-container">
-          <h2>Features</h2>
-          <div className="features-grid">
-            {/* Feature Card */}
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Building2 size={24} />
-              </div>
-              <h3>Comprehensive Room Management</h3>
-              <p>
-                Allocate, monitor, and manage rooms in real time with occupancy tracking and maintenance alerts.
-              </p>
-            </div>
-            {/* Feature Card */}
-            <div className="feature-card">
-              <div className="feature-icon">
-                <UserRound size={24} />
-              </div>
-              <h3>Student Self‑Service Portal</h3>
-              <p>
-                Students can view room details, submit maintenance requests, check mess menus, and apply for leave.
-              </p>
-            </div>
-            {/* Feature Card */}
-            <div className="feature-card">
-              <div className="feature-icon">
-                <ShieldCheck size={24} />
-              </div>
-              <h3>Admin Controls & Analytics</h3>
-              <p>
-                Manage users, rooms, mess, holidays, and generate reports with role‑based access control.
-              </p>
-            </div>
-            {/* Feature Card */}
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Mail size={24} />
-              </div>
-              <h3>Mess & Nutrition Management</h3>
-              <p>
-                Plan menus, track inventory, and manage meal allocations for students and staff.
-              </p>
-            </div>
-            {/* Feature Card */}
-            <div className="feature-card">
-              <div className="feature-icon">
-                <LogIn size={24} />
-              </div>
-              <h3>Visitor & QR Pass System</h3>
-              <p>
-                Issue time‑limited QR codes for visitors, track entries/exits, and enhance hostel security.
-              </p>
-            </div>
-            {/* Feature Card */}
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Lock size={24} />
-              </div>
-              <h3>Leave & Maintenance Ticketing</h3>
-              <p>
-                Students submit leave requests; wardens approve. Maintenance tickets are tracked to resolution.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="testimonials">
-        <div className="testimonials-container">
-          <h2>What Users Say</h2>
-          <div className="testimonials-grid">
-            {/* Testimonial */}
-            <div className="testimonial-card">
-              <p>
-                "The Smart Hostel system has cut our administrative workload by half. Real‑time room tracking is a game‑changer."
-              </p>
-              <div className="testimonial-author">
-                <div className="author-initials">AW</div>
-                <div>
-                  <h4>Anna Warden</h4>
-                  <p>Hostel Warden</p>
-                </div>
-              </div>
-            </div>
-            {/* Testimonial */}
-            <div className="testimonial-card">
-              <p>
-                "As a student, I love being able to check my room status, mess menu, and apply for leave from my phone."
-              </p>
-              <div className="testimonial-author">
-                <div className="author-initials">SR</div>
-                <div>
-                  <h4>Sameer Rao</h4>
-                  <p>Final Year Student</p>
-                </div>
-              </div>
-            </div>
-            {/* Testimonial */}
-            <div className="testimonial-card">
-              <p>
-                "The admin dashboard gives me full control over users, rooms, and reports. Security via role‑based access is excellent."
-              </p>
-              <div className="testimonial-author">
-                <div className="author-initials">MK</div>
-                <div>
-                  <h4>Manish Kapoor</h4>
-                  <p>Hostel Administrator</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Login Section */}
-      <section id="login-section" className="login-section">
-        <div className="login-container">
-          <h2>Login to Continue</h2>
-          <p>
-            Choose your role to load demo credentials and experience the dashboard.
-          </p>
-
-          {/* Role Picker */}
-          <div className="role-picker">
-            <h3>Select Role</h3>
-            <div className="role-choices">
-              {roleOptions.map((option) => {
-                const Icon = option.icon;
-                const active = selectedRole.role === option.role;
-                return (
-                  <button
-                    key={option.role}
-                    type="button"
-                    className={`role-choice ${active ? "active" : ""}`}
-                    onClick={() => selectRole(option)}
-                  >
-                    <Icon size={20} />
-                    <div className="role-info">
-                      <div className="role-title">{option.title}</div>
-                      <div className="role-desc">{option.description}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+      <main id="home">
+        <section className="home-hero" aria-labelledby="home-title">
+          <div className="home-hero-copy">
+            <div className="home-eyebrow"><span /> A HOSTEL MANAGEMENT WORKSPACE</div>
+            <h1 id="home-title">Hostel life,<br /><em>handled clearly.</em></h1>
+            <p>Room assignments, visitor access, maintenance, mess feedback, and holiday plans—connected in one place.</p>
+            <div className="home-hero-actions"><a className="home-primary-button" href="#sign-in">Open your portal <ArrowRight size={17} /></a><a className="home-text-link" href="#workflows">Explore the platform <span aria-hidden="true">↓</span></a></div>
+            <div className="home-audience" aria-label="Designed for students, wardens, and administrators"><span><GraduationCap size={16} /> Students</span><i /><span><ShieldCheck size={16} /> Wardens</span><i /><span><UsersRound size={16} /> Admins</span></div>
           </div>
 
-          {/* Selected Role Note */}
-          <div className="selected-role-note">
-            Signing in as <strong>{selectedRole.title}</strong>{" "}
-            <span className="role-path">{selectedRole.path.replace("/", "")}</span>
-          </div>
+          <aside className="home-pass-card" aria-label="Example of the visitor pass process">
+            <div className="home-pass-header"><span className="home-pass-icon"><QrCode size={20} /></span><div><span>VISITOR ACCESS</span><strong>From request to entry</strong></div><span className="home-pass-duration"><Clock3 size={14} /> 8 hours</span></div>
+            <p className="home-pass-intro">A simple, traceable gate pass flow.</p>
+            <ol className="home-timeline">
+              <li className="is-complete"><span className="home-timeline-icon"><CircleCheck size={17} /></span><div><strong>Pass requested</strong><small>Student adds visitor details</small></div></li>
+              <li className="is-complete"><span className="home-timeline-icon"><CircleCheck size={17} /></span><div><strong>QR pass issued</strong><small>Ready to show at the gate</small></div></li>
+              <li><span className="home-timeline-icon"><KeyRound size={16} /></span><div><strong>Entry recorded</strong><small>Guard scans the pass</small></div></li>
+            </ol>
+            <div className="home-pass-foot"><span /> Expires automatically after 8 hours</div>
+          </aside>
+        </section>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="form-group">
-              <label htmlFor="login-email">Email Address</label>
-              <div className="input-group">
-                <Mail size={16} className="input-icon" />
-                <input
-                  id="login-email"
-                  type="email"
-                  className="input-field"
-                  placeholder="you@hostel.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  required
-                />
-              </div>
-            </div>
-            <div className="form-group">
-              <label htmlFor="login-password">Password</label>
-              <div className="input-group">
-                <Lock size={16} className="input-icon" />
-                <input
-                  id="login-password"
-                  type="password"
-                  className="input-field"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              className="btn btn-primary btn-fullwidth"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="spinner"></div>
-              ) : (
-                <>
-                  <LogIn size={18} />
-                  Enter {selectedRole.title} Dashboard
-                </>
-              )}
-            </button>
-          </form>
+        <section id="workflows" className="home-workflows" aria-labelledby="workflow-title">
+          <div className="home-section-heading"><span className="home-kicker">ONE CONNECTED WORKSPACE</span><h2 id="workflow-title">The everyday work, in one view.</h2><p>Keep requests and records connected to the people responsible for them.</p></div>
+          <div className="home-feature-grid">{workflowFeatures.map(({ icon: Icon, title, text }, index) => <article className={"home-feature home-feature-" + (index + 1)} key={title}><span className="home-feature-icon"><Icon size={21} /></span><span className="home-feature-number">0{index + 1}</span><h3>{title}</h3><p>{text}</p></article>)}</div>
+        </section>
 
-          <div className="login-note">
-            Demo credentials are pre‑filled based on the selected role.
-          </div>
-        </div>
-      </section>
+        <section id="portals" className="home-portals" aria-labelledby="portals-title">
+          <div className="home-section-heading"><span className="home-kicker">BUILT AROUND YOUR ROLE</span><h2 id="portals-title">A clear place for everyone.</h2><p>Each portal focuses on the tasks that person needs to complete.</p></div>
+          <div className="home-role-grid">{roleDetails.map(({ role, icon: Icon, title, text, points }) => <article className={"home-role-card home-role-" + role.toLowerCase()} key={role}>
+            <div className="home-role-top"><span className="home-role-icon"><Icon size={21} /></span><span>{role}</span></div><h3>{title}</h3><p className="home-role-copy">{text}</p>
+            <ul>{points.map((point) => <li key={point}><CircleCheck size={15} />{point}</li>)}</ul>
+            <a href="#sign-in" onClick={() => selectRole(roleOptions.find((option) => option.role === role))}>Sign in as {role.toLowerCase()} <ArrowRight size={15} /></a>
+          </article>)}</div>
+        </section>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="footer-content">
-          <p>
-            &copy; {new Date().getFullYear()} Smart Hostel Management System. All rights reserved.
-          </p>
-          <div className="footer-links">
-            <a href="#" className="footer-link">Privacy Policy</a>
-            <a href="#" className="footer-link">Terms of Service</a>
-            <a href="#" className="footer-link">Contact</a>
+        <section id="sign-in" className="home-signin" aria-labelledby="signin-title">
+          <div className="home-signin-copy"><span className="home-kicker">WELCOME BACK</span><h2 id="signin-title">Your hostel,<br />at your fingertips.</h2><p>Use the account issued by your hostel administrator. Choose your role and continue to your workspace.</p><div className="home-signin-note"><span className="home-signin-check"><CircleCheck size={18} /></span><div><strong>One secure sign-in</strong><small>Access is managed by your assigned role.</small></div></div></div>
+          <div className="home-login-card">
+            <div className="home-login-heading"><span><LogIn size={19} /></span><div><h3>Sign in to SmartHostel</h3><p>Choose your role to get started.</p></div></div>
+            <div className="home-role-picker" role="group" aria-label="Choose account role">{roleOptions.map((option) => { const Icon = option.icon; const active = selectedRole.role === option.role; return <button key={option.role} type="button" className={active ? "selected" : ""} aria-pressed={active} onClick={() => selectRole(option)}><Icon size={17} /><span>{option.title}</span></button>; })}</div>
+            <form className="home-login-form" onSubmit={handleSubmit}>
+              <div className="home-form-field"><label htmlFor="login-email">Email address</label><div><Mail size={17} /><input id="login-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@campus.edu" autoComplete="username" required /></div></div>
+              <div className="home-form-field"><label htmlFor="login-password">Password</label><div><KeyRound size={17} /><input id="login-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" autoComplete="current-password" required /></div></div>
+              <button className="home-primary-button home-submit" type="submit" disabled={isLoading}>{isLoading ? <span className="spinner" aria-label="Signing in" /> : <>Continue as {selectedRole.title} <ArrowRight size={17} /></>}</button>
+            </form>
+            <p className="home-login-help">Need an account? Contact your hostel administrator.</p>
           </div>
-        </div>
-      </footer>
+        </section>
+      </main>
+
+      <footer className="home-footer"><a className="home-footer-brand" href="#home"><span className="home-brand-mark"><Building2 size={17} /></span>SmartHostel</a><p>Hostel services for students and the teams who support them.</p><span>© {new Date().getFullYear()} SmartHostel</span></footer>
     </div>
   );
 }

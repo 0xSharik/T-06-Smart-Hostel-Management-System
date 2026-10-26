@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
+import ThemeToggle from "../components/ThemeToggle";
 
 const adminNav = [
   {
@@ -88,7 +89,7 @@ export default function AdminLayout() {
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon" style={{ background: "linear-gradient(135deg,#8b5cf6,#7c3aed)" }}>
+          <div className="sidebar-logo-icon" style={{ background: "#c8102e" }}>
             <Building2 size={20} color="white" />
           </div>
           <div>
@@ -118,7 +119,7 @@ export default function AdminLayout() {
 
         <div style={{ padding: "var(--space-md)", borderTop: "1px solid var(--border-subtle)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", padding: "var(--space-sm)", marginBottom: "var(--space-sm)" }}>
-            <div className="user-avatar" style={{ width: 36, height: 36, fontSize: "0.8125rem", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}>
+            <div className="user-avatar" style={{ width: 36, height: 36, fontSize: "0.8125rem", background: "#c8102e" }}>
               {getInitials(user?.name)}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -144,10 +145,11 @@ export default function AdminLayout() {
             <span className="header-title">{title}</span>
           </div>
           <div className="header-right">
+            <ThemeToggle />
             <NavLink to="/admin/notifications">
               <Megaphone size={20} color="var(--text-secondary)" />
             </NavLink>
-            <div className="user-avatar" style={{ width: 32, height: 32, fontSize: "0.75rem", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}>
+            <div className="user-avatar" style={{ width: 32, height: 32, fontSize: "0.75rem", background: "#c8102e" }}>
               {getInitials(user?.name)}
             </div>
           </div>

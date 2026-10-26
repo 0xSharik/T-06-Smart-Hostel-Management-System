@@ -35,7 +35,7 @@ export default function VisitorsPage() {
   const visitors = data?.data?.data;
   const meta = data?.data?.meta;
   const showQrOption = pathname.startsWith("/warden/");
-  const activeVisitors = visitors?.filter((visitor) => !visitor.outTime).length || 0;
+  const activeVisitors = visitors?.filter((visitor) => visitor.inTime && !visitor.outTime).length || 0;
   const qrPasses = visitors?.filter((visitor) => visitor.qrToken).length || 0;
 
   const fmt = (d) => d ? new Date(d).toLocaleString("en-IN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" }) : "—";
@@ -155,7 +155,7 @@ export default function VisitorsPage() {
                       )}
                     </td>
                     <td>
-                      {!v.outTime && (
+                      {v.inTime && !v.outTime && (
                         <button
                           id={`exit-visitor-${v.id}`}
                           className="btn btn-secondary btn-sm"

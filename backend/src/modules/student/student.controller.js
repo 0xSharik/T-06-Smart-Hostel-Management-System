@@ -6,8 +6,8 @@ const studentService = require("./student.service");
 const { sendSuccess, sendPaginated } = require("../../utils/response");
 
 const getAllStudents = async (req, res) => {
-  const { page = 1, limit = 10, search = "", course = "", year = "" } = req.query;
-  const { students, total } = await studentService.getAllStudents({ page, limit, search, course, year });
+  const { page = 1, limit = 10, search = "", course = "", year = "", unassigned } = req.query;
+  const { students, total } = await studentService.getAllStudents({ page, limit, search, course, year, unassignedOnly: unassigned === "true" });
   return sendPaginated(res, students, total, page, limit, "Students fetched successfully.");
 };
 

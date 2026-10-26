@@ -38,7 +38,7 @@ export default function StudentsPage() {
   );
 
   const deleteMutation = useMutation(studentAPI.delete, {
-    onSuccess: () => { qc.invalidateQueries("students"); toast.success("Student profile deleted"); },
+    onSuccess: () => { qc.invalidateQueries("students"); qc.invalidateQueries("warden-all-rooms"); qc.invalidateQueries("room-stats"); qc.invalidateQueries("floor-occupancy"); qc.invalidateQueries("warden-floor-occupancy"); qc.invalidateQueries("dashboard-stats"); qc.invalidateQueries("warden-dash-stats"); toast.success("Student profile deleted"); },
     onError: (e) => toast.error(e.response?.data?.message || "Delete failed"),
   });
 
@@ -53,6 +53,8 @@ export default function StudentsPage() {
       onSuccess: () => {
         qc.invalidateQueries("students");
         qc.invalidateQueries("warden-all-rooms");
+        qc.invalidateQueries("all-available-rooms-select");
+        qc.invalidateQueries("room-stats"); qc.invalidateQueries("floor-occupancy"); qc.invalidateQueries("warden-floor-occupancy"); qc.invalidateQueries("dashboard-stats"); qc.invalidateQueries("warden-dash-stats");
         toast.success("Room assigned successfully!");
         setAssignStudentTarget(null);
         setSelectedRoomId("");
@@ -65,6 +67,8 @@ export default function StudentsPage() {
     onSuccess: () => {
       qc.invalidateQueries("students");
       qc.invalidateQueries("warden-all-rooms");
+      qc.invalidateQueries("all-available-rooms-select");
+      qc.invalidateQueries("room-stats"); qc.invalidateQueries("floor-occupancy"); qc.invalidateQueries("warden-floor-occupancy"); qc.invalidateQueries("dashboard-stats"); qc.invalidateQueries("warden-dash-stats");
       toast.success("Student unassigned from room");
     },
     onError: (e) => toast.error(e.response?.data?.message || "Unassign failed"),

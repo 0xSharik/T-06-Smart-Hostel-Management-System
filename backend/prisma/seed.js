@@ -3,43 +3,26 @@ require('dotenv').config();
 /**
  * prisma/seed.js — Database Seed File
  *
- * Room Layout (500 rooms — 10 Floors × 50 Rooms):
- *   Per floor room distribution:
- *     Rooms 01-22 → QUINT  (5-seater): 22 rooms × 10 floors = 220 rooms → 1100 beds
- *     Rooms 23-36 → QUAD   (4-seater): 14 rooms × 10 floors = 140 rooms →  560 beds
- *     Rooms 37-44 → TRIPLE (3-seater):  8 rooms × 10 floors =  80 rooms →  240 beds
- *     Rooms 45-48 → DOUBLE (2-seater):  4 rooms × 10 floors =  40 rooms →   80 beds
- *     Rooms 49-50 → SINGLE (1-seater):  2 rooms × 10 floors =  20 rooms →   20 beds
- *   ──────────────────────────────────────────────────────────────────────────
- *   TOTAL: 500 rooms | 2000 beds
- *
- * Reserved empty rooms (~20 rooms, ~80 beds removed):
- *   Rooms ending in 10 and 35 on each floor.
- *
- * Maintenance rooms (~5 rooms, ~20 beds removed):
- *   One specific room per odd floor.
- *
- * Assignable beds ≈ 2000 − 80 − 20 = ~1900 beds
- * → 1900 students assigned to rooms, ~100 on waiting list = 2000 total
+ * Demo database: 100 rooms (10 floors × 10 rooms) and 200 student records.
+ * One room per floor is reserved; one additional room on each odd floor is
+ * marked for maintenance. Test this seeder only against a disposable database:
+ * it deletes existing hostel transactional and student data before inserting.
  */
 
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const {
+  TOTAL_FLOORS,
+  ROOMS_PER_FLOOR,
+  DEMO_STUDENTS,
+  getRoomType,
+  getRoomNo,
+  getCapacity,
+  getReservedRoomNos,
+  getMaintenanceRoomNos,
+} = require("./seed-layout");
 
 const prisma = new PrismaClient();
-
-// ── Room type helpers ─────────────────────────────────────────────────────────
-function getRoomType(roomNum) {
-  if (roomNum <= 22) return "QUINT";
-  if (roomNum <= 36) return "QUAD";
-  if (roomNum <= 44) return "TRIPLE";
-  if (roomNum <= 48) return "DOUBLE";
-  return "SINGLE";
-}
-
-function getCapacity(type) {
-  return { SINGLE: 1, DOUBLE: 2, TRIPLE: 3, QUAD: 4, QUINT: 5 }[type];
-}
 
 function buildAmenities(type, floor) {
   const base = ["Bed", "Study Desk", "Wardrobe"];
@@ -52,17 +35,17 @@ function buildAmenities(type, floor) {
 }
 
 async function main() {
-  console.log("🌱 Seeding database — 500 rooms (10 floors × 50) + 2000 students...");
+  console.log(`🌱 Seeding database — ${TOTAL_FLOORS * ROOMS_PER_FLOOR} rooms + ${DEMO_STUDENTS} students...`);
 
   // Reset all assignments & clear old data for clean seed
   console.log("  ⏳ Wiping old transactional & room data...");
   await prisma.student.updateMany({ data: { roomId: null } });
-  await prisma.studentProfileUpdateRequest.deleteMany();
   await prisma.maintenanceRequest.deleteMany();
   await prisma.visitor.deleteMany();
   await prisma.leaveRequest.deleteMany();
   await prisma.messFeedback.deleteMany();
   await prisma.notification.deleteMany();
+  await prisma.holiday.deleteMany();
   await prisma.student.deleteMany();
   await prisma.user.deleteMany({ where: { role: "STUDENT" } });
   await prisma.room.deleteMany();
@@ -98,30 +81,25 @@ async function main() {
   });
   console.log("  ✅ Warden:", warden.email);
 
-  // ── 3. Create Rooms (10 Floors × 50 Rooms = 500 total) ───────────────────
-  const totalFloors    = 10;
-  const roomsPerFloor  = 50;
+  // ── 3. Create demo rooms ─────────────────────────────────────────────────
+  const totalFloors    = TOTAL_FLOORS;
+  const roomsPerFloor  = ROOMS_PER_FLOOR;
 
   const createdRooms       = [];
   const emptyRoomNos       = new Set(); // intentionally vacant
   const maintenanceRoomNos = new Set(); // under maintenance
 
   // Maintenance: one room per odd floor (5 rooms total)
-  const maintenanceSpec = new Set(["110", "325", "540", "710", "925"]);
+  const maintenanceSpec = new Set(getMaintenanceRoomNos());
 
-  // Empty rooms: rooms ending in 10 and 35 on each floor (~20 rooms)
-  for (let f = 1; f <= totalFloors; f++) {
-    emptyRoomNos.add(`${f}10`);
-    emptyRoomNos.add(`${f}35`);
-  }
-  // A few extra empty rooms on floors 2, 4, 6, 8 for variety
-  ["205", "415", "620", "830"].forEach(r => emptyRoomNos.add(r));
+  // Keep one room per floor intentionally vacant for the demo.
+  getReservedRoomNos().forEach((roomNo) => emptyRoomNos.add(roomNo));
 
   console.log("  ⏳ Creating rooms (this may take a moment)...");
 
   for (let floor = 1; floor <= totalFloors; floor++) {
     for (let r = 1; r <= roomsPerFloor; r++) {
-      const roomNo          = `${floor}${r < 10 ? "0" + r : r}`;
+      const roomNo          = getRoomNo(floor, r);
       const type            = getRoomType(r);
       const capacity        = getCapacity(type);
       const underMaintenance = maintenanceSpec.has(roomNo);
@@ -155,13 +133,13 @@ async function main() {
 
   const totalBeds = createdRooms.reduce((s, r) => s + r.capacity, 0);
   console.log(`\n  ✅ ${createdRooms.length} rooms created | ${totalBeds} total beds`);
-  console.log(`     Distribution: 220×QUINT(5) 140×QUAD(4) 80×TRIPLE(3) 40×DOUBLE(2) 20×SINGLE(1)`);
+  console.log("     Distribution per floor: 4×QUINT, 3×QUAD, 1×TRIPLE, 1×DOUBLE, 1×SINGLE");
   console.log(`     Maintenance: ${maintenanceRoomNos.size} | Empty (reserved): ${emptyRoomNos.size}`);
 
   // Reset all room assignments before re-seeding students
   await prisma.student.updateMany({ data: { roomId: null } });
 
-  // ── 4. Create 2000 Students ────────────────────────────────────────────────
+  // ── 4. Create demo students ────────────────────────────────────────────────
   const studentPassword = await bcrypt.hash("Student@1234", saltRounds);
 
   const courses = [
@@ -187,11 +165,11 @@ async function main() {
     r => r.status === "AVAILABLE" && !emptyRoomNos.has(r.roomNo)
   );
 
-  console.log(`\n  ⏳ Seeding 2000 students (assignable beds: ${assignableRooms.reduce((s, r) => s + r.capacity, 0)})...`);
+  console.log(`\n  ⏳ Seeding ${DEMO_STUDENTS} students (assignable beds: ${assignableRooms.reduce((s, r) => s + r.capacity, 0)})...`);
 
   let roomIndex = 0;
 
-  for (let i = 1; i <= 2000; i++) {
+  for (let i = 1; i <= DEMO_STUDENTS; i++) {
     const rollNo = `ST2024${1000 + i}`;
     const email  = `student${i}@hostel.com`;
     const name   = `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
@@ -246,8 +224,8 @@ async function main() {
       }
     }
 
-    if (i % 200 === 0) {
-      process.stdout.write(`     Progress: ${i}/2000 students...`);
+    if (i % 20 === 0 || i === DEMO_STUDENTS) {
+      process.stdout.write(`     Progress: ${i}/${DEMO_STUDENTS} students...\n`);
     }
   }
 
@@ -266,7 +244,7 @@ async function main() {
   const assignedCount = await prisma.student.count({ where: { roomId: { not: null } } });
   const waitingCount  = await prisma.student.count({ where: { roomId: null } });
 
-  console.log(`  ✅ 2000 student records seeded`);
+  console.log(`  ✅ ${DEMO_STUDENTS} student records seeded`);
   console.log(`     Assigned to rooms: ${assignedCount}`);
   console.log(`     Waiting list (no room): ${waitingCount}`);
 
@@ -359,10 +337,15 @@ async function main() {
 
   // ── 9. Holidays ──────────────────────────────────────────────────────────
   console.log("  ⏳ Seeding holidays...");
+  const daysFromNow = (days) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date;
+  };
   const holidayList = [
-    { title: "Independence Day", date: new Date("2026-08-15"), type: "PUBLIC" },
-    { title: "Gandhi Jayanti", date: new Date("2026-10-02"), type: "PUBLIC" },
-    { title: "Hostel Foundation Day", date: new Date("2026-11-10"), type: "HOSTEL_SPECIFIC" },
+    { title: "Community Day", date: daysFromNow(15), type: "PUBLIC" },
+    { title: "Campus Wellness Day", date: daysFromNow(30), type: "PUBLIC" },
+    { title: "Hostel Foundation Day", date: daysFromNow(45), type: "HOSTEL_SPECIFIC" },
   ];
   for (const h of holidayList) {
     await prisma.holiday.create({ data: h });
@@ -378,11 +361,11 @@ async function main() {
   console.log("\nRoom summary:");
   console.log(`  Total rooms : ${createdRooms.length} (${totalFloors} floors × ${roomsPerFloor} rooms)`);
   console.log(`  Total beds  : ${totalBeds}`);
-  console.log(`  Types       : 220×QUINT(5) | 140×QUAD(4) | 80×TRIPLE(3) | 40×DOUBLE(2) | 20×SINGLE(1)`);
+  console.log("  Types       : 40×QUINT(5) | 30×QUAD(4) | 10×TRIPLE(3) | 10×DOUBLE(2) | 10×SINGLE(1)");
   console.log(`  Maintenance : ${maintenanceRoomNos.size} rooms | Empty (reserved): ${emptyRoomNos.size} rooms`);
 
   console.log("\nStudent summary:");
-  console.log(`  Total       : 2000`);
+  console.log(`  Total       : ${DEMO_STUDENTS}`);
   console.log(`  Assigned    : ${assignedCount}`);
   console.log(`  Waiting list: ${waitingCount}`);
 }

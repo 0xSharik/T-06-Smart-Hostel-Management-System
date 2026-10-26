@@ -9,6 +9,11 @@ import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
 import "./index.css";
 
+const savedTheme = localStorage.getItem("hostel-theme");
+if (savedTheme === "dark" || savedTheme === "light") {
+  document.documentElement.dataset.theme = savedTheme;
+}
+
 // Configure React Query with sensible defaults
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,18 +37,18 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         position="top-right"
         toastOptions={{
           style: {
-            background: "#1e2438",
-            color: "#f1f5f9",
-            border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: "10px",
-            fontFamily: "'Inter', sans-serif",
+            background: "var(--bg-card)",
+            color: "var(--text-primary)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            fontFamily: "var(--font-sans)",
             fontSize: "0.875rem",
           },
           success: {
-            iconTheme: { primary: "#10b981", secondary: "#1e2438" },
+            iconTheme: { primary: "#10b981", secondary: "var(--bg-card)" },
           },
           error: {
-            iconTheme: { primary: "#ef4444", secondary: "#1e2438" },
+            iconTheme: { primary: "#ef4444", secondary: "var(--bg-card)" },
           },
           duration: 3000,
         }}

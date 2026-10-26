@@ -14,7 +14,7 @@ const handleValidationErrors = (req, res, next) => {
 const createRoomValidator = [
   body("roomNo").trim().notEmpty().withMessage("Room number is required"),
   body("floor").notEmpty().withMessage("Floor is required").isInt({ min: 0 }).withMessage("Floor must be a non-negative integer"),
-  body("type").optional().isIn(["SINGLE", "DOUBLE", "TRIPLE"]).withMessage("Type must be SINGLE, DOUBLE, or TRIPLE"),
+  body("type").optional().isIn(["SINGLE", "DOUBLE", "TRIPLE", "QUAD", "QUINT"]).withMessage("Invalid room type"),
   body("capacity").optional().isInt({ min: 1, max: 10 }).withMessage("Capacity must be between 1 and 10"),
   body("amenities").optional().isArray().withMessage("Amenities must be an array"),
   handleValidationErrors,
@@ -22,7 +22,7 @@ const createRoomValidator = [
 
 const updateRoomValidator = [
   body("floor").optional().isInt({ min: 0 }).withMessage("Floor must be a non-negative integer"),
-  body("type").optional().isIn(["SINGLE", "DOUBLE", "TRIPLE"]).withMessage("Invalid room type"),
+  body("type").optional().isIn(["SINGLE", "DOUBLE", "TRIPLE", "QUAD", "QUINT"]).withMessage("Invalid room type"),
   body("capacity").optional().isInt({ min: 1, max: 10 }).withMessage("Capacity must be 1–10"),
   body("status").optional().isIn(["AVAILABLE", "OCCUPIED", "FULL", "MAINTENANCE"]).withMessage("Invalid status"),
   body("amenities").optional().isArray().withMessage("Amenities must be an array"),

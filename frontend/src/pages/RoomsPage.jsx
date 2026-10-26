@@ -32,12 +32,12 @@ export default function RoomsPage() {
   );
 
   const deleteMutation = useMutation(roomAPI.delete, {
-    onSuccess: () => { qc.invalidateQueries("rooms"); qc.invalidateQueries("room-stats"); toast.success("Room deleted"); },
+    onSuccess: () => { qc.invalidateQueries("rooms"); qc.invalidateQueries("room-stats"); qc.invalidateQueries("warden-all-rooms"); qc.invalidateQueries("floor-occupancy"); qc.invalidateQueries("warden-floor-occupancy"); qc.invalidateQueries("dashboard-stats"); qc.invalidateQueries("warden-dash-stats"); toast.success("Room deleted"); },
     onError: (e) => toast.error(e.response?.data?.message || "Delete failed"),
   });
 
   const createMutation = useMutation(roomAPI.create, {
-    onSuccess: () => { qc.invalidateQueries("rooms"); qc.invalidateQueries("room-stats"); setShowModal(false); toast.success("Room created"); },
+    onSuccess: () => { qc.invalidateQueries("rooms"); qc.invalidateQueries("room-stats"); qc.invalidateQueries("warden-all-rooms"); qc.invalidateQueries("floor-occupancy"); qc.invalidateQueries("warden-floor-occupancy"); qc.invalidateQueries("dashboard-stats"); qc.invalidateQueries("warden-dash-stats"); setShowModal(false); toast.success("Room created"); },
     onError: (e) => toast.error(e.response?.data?.message || "Create failed"),
   });
 

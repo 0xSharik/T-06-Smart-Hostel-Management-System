@@ -176,7 +176,7 @@ export default function AdminReports() {
                     <Tooltip
                       contentStyle={{ background: "#161b27", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 8, color: "#f1f5f9" }}
                     />
-                    <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="#c8102e" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

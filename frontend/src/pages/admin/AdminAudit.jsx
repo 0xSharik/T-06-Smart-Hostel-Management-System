@@ -18,11 +18,11 @@ const SAMPLE_LOGS = [
 ];
 
 const LEVEL_STYLES = {
-  INFO:    { badge: "badge-secondary", icon: CheckCircle2, color: "#60a5fa" },
-  WARN:    { badge: "badge-warning",   icon: AlertTriangle, color: "#f59e0b" },
-  WARNING: { badge: "badge-warning",   icon: AlertTriangle, color: "#f59e0b" },
-  SYSTEM:  { badge: "badge-success",   icon: Shield,        color: "#10b981" },
-  ERROR:   { badge: "badge-danger",    icon: AlertTriangle, color: "#ef4444" },
+  INFO:    { badge: "badge-info", icon: CheckCircle2, color: "var(--accent-info)" },
+  WARN:    { badge: "badge-warning", icon: AlertTriangle, color: "var(--accent-warning)" },
+  WARNING: { badge: "badge-warning", icon: AlertTriangle, color: "var(--accent-warning)" },
+  SYSTEM:  { badge: "badge-success", icon: Shield, color: "var(--accent-success)" },
+  ERROR:   { badge: "badge-danger", icon: AlertTriangle, color: "var(--accent-danger)" },
 };
 
 export default function AdminAudit() {

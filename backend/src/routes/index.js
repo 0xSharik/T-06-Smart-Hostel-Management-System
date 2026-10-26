@@ -26,6 +26,7 @@ const messRoutes = require("../modules/mess/mess.routes");
 const holidayRoutes = require("../modules/holiday/holiday.routes");
 const dashboardRoutes = require("../modules/dashboard/dashboard.routes");
 const notificationRoutes = require("../modules/notification/notification.routes");
+const userRoutes = require("../modules/user/user.routes");
 
 // ── Mount Routes ───────────────────────────────────────────────────────────────
 router.use("/auth", authRoutes);
@@ -37,6 +38,7 @@ router.use("/mess", messRoutes);
 router.use("/holidays", holidayRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/users", userRoutes);
 
 // ── API Health Check ───────────────────────────────────────────────────────────
 router.get("/health", (req, res) => {

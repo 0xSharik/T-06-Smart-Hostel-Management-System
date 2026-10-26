@@ -3,7 +3,8 @@
  * Premium warden-exclusive UI with rich scan/generate section styling.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "react-query";
 import {
   QrCode, Scan, CheckCircle2, AlertCircle,
   Copy, Clock, User, Phone, Heart, Shield, RefreshCw,
@@ -13,20 +14,25 @@ import { visitorAPI } from "../../api";
 import toast from "react-hot-toast";
 
 export default function QRScanPage() {
+  const qc = useQueryClient();
   const [activeTab, setActiveTab]     = useState("scan");
   const [scanResult, setScanResult]   = useState(null);
   const [manualToken, setManualToken] = useState("");
   const [loading, setLoading]         = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const [cameraActive, setCameraActive] = useState(false);
+  const videoRef = useRef(null);
+  const cameraStreamRef = useRef(null);
+  const cameraRunRef = useRef(false);
 
   const [genForm, setGenForm]     = useState({ studentId: "", name: "", phone: "", relation: "", purpose: "" });
   const [generatedQR, setGeneratedQR] = useState(null);
 
-  const handleManualVerify = async (e) => {
-    e.preventDefault();
-    if (!manualToken.trim()) return;
+  const verifyToken = async (token) => {
+    if (!token.trim() || loading) return;
     setLoading(true);
     try {
-      const res = await visitorAPI.scanQR(manualToken.trim());
+      const res = await visitorAPI.scanQR(token.trim());
       setScanResult({
         success: true,
         message: "Visitor QR Verified & Entry Logged!",
@@ -34,6 +40,13 @@ export default function QRScanPage() {
         timestamp: new Date().toLocaleTimeString("en-IN"),
       });
       toast.success("Visitor entry logged via QR pass!");
+      cameraRunRef.current = false;
+      cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+      cameraStreamRef.current = null;
+      setCameraActive(false);
+      qc.invalidateQueries("visitors");
+      qc.invalidateQueries("dashboard-stats");
+      qc.invalidateQueries("warden-dash-stats");
       setManualToken("");
     } catch (err) {
       setScanResult({
@@ -46,6 +59,71 @@ export default function QRScanPage() {
       setLoading(false);
     }
   };
+
+  const handleManualVerify = (e) => {
+    e.preventDefault();
+    verifyToken(manualToken);
+  };
+
+  const stopCamera = () => {
+    cameraRunRef.current = false;
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    cameraStreamRef.current = null;
+    setCameraActive(false);
+  };
+
+  const startCamera = async () => {
+    setCameraError("");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("Camera access is unavailable in this browser or page context. Use HTTPS or localhost, or paste the QR token below.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      cameraStreamRef.current = stream;
+      if (!videoRef.current) return stopCamera();
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+      const detector = "BarcodeDetector" in window
+        ? new window.BarcodeDetector({ formats: ["qr_code"] })
+        : null;
+      const jsQRDecoder = detector ? null : (await import("jsqr")).default;
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      cameraRunRef.current = true;
+      setCameraActive(true);
+      const scanFrame = async () => {
+        if (!cameraRunRef.current || !videoRef.current) return;
+        try {
+          let rawValue;
+          if (detector) {
+            const codes = await detector.detect(videoRef.current);
+            rawValue = codes[0]?.rawValue;
+          } else if (videoRef.current.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && context) {
+            const video = videoRef.current;
+            const scale = Math.min(1, 640 / video.videoWidth);
+            canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+            canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            rawValue = jsQRDecoder(context.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" })?.data;
+          }
+          if (rawValue) {
+            stopCamera();
+            await verifyToken(rawValue);
+            return;
+          }
+        } catch { /* keep scanning through transient camera decode errors */ }
+        if (cameraRunRef.current) window.setTimeout(scanFrame, 250);
+      };
+      scanFrame();
+    } catch (error) {
+      stopCamera();
+      setCameraError(error.name === "NotAllowedError" ? "Camera access was blocked. Allow camera access or paste the QR token below." : "Could not start the camera. Paste the QR token below.");
+    }
+  };
+
+  useEffect(() => () => stopCamera(), []);
+  useEffect(() => { if (activeTab !== "scan") stopCamera(); }, [activeTab]);
 
   const handleGenerateQR = async (e) => {
     e.preventDefault();
@@ -159,24 +237,16 @@ export default function QRScanPage() {
                   }} />
                 ))}
 
-                <div style={{
-                  display: "flex", flexDirection: "column", alignItems: "center",
-                  justifyContent: "center", padding: "2.5rem 1.5rem", gap: 12, textAlign: "center",
-                }}>
-                  <div style={{
-                    width: 80, height: 80, borderRadius: "var(--radius-lg)",
-                    background: "rgba(16,185,129,0.06)", border: "1px dashed rgba(16,185,129,0.25)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    animation: "scan-pulse 2s ease-in-out infinite",
-                  }}>
-                    <Fingerprint size={40} color="rgba(16,185,129,0.35)" />
-                  </div>
-                  <div style={{ fontSize: "0.8125rem", color: "rgba(16,185,129,0.5)", lineHeight: 1.5 }}>
-                    Camera scanning unavailable in browser.<br />
-                    Use the token input below.
-                  </div>
-                </div>
+                <video ref={videoRef} muted playsInline style={{ display: cameraActive ? "block" : "none", width: "100%", maxHeight: 280, objectFit: "cover" }} />
+                {!cameraActive && <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "1.5rem", gap: 12, textAlign: "center" }}>
+                  <Fingerprint size={40} color="rgba(16,185,129,0.45)" />
+                  <div style={{ fontSize: "0.8125rem", color: "rgba(16,185,129,0.7)", lineHeight: 1.5 }}>{cameraError || "Start the camera to scan a visitor QR pass, or paste its token below."}</div>
+                </div>}
               </div>
+
+              <button type="button" className="btn btn-secondary" onClick={cameraActive ? stopCamera : startCamera} disabled={loading} style={{ width: "100%", justifyContent: "center", marginBottom: "1rem" }}>
+                <Scan size={15} /> {cameraActive ? "Stop Camera" : "Start Camera QR Scan"}
+              </button>
 
               <form onSubmit={handleManualVerify}>
                 <div style={{ marginBottom: "0.625rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>

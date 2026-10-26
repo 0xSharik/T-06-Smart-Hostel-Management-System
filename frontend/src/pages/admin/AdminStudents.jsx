@@ -12,6 +12,7 @@ export default function AdminStudents() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState("list");
   const [search, setSearch]       = useState("");
+  const [page, setPage] = useState(1);
 
   const [assignTarget, setAssignTarget] = useState(null);
   const [selectedRoomId, setSelectedRoomId] = useState("");
@@ -20,13 +21,15 @@ export default function AdminStudents() {
   const [prefForm, setPrefForm] = useState({ preferredFloor: "1", preferredType: "SINGLE", course: "B.Tech CSE", year: 1 });
   const [rankedRooms, setRankedRooms] = useState([]);
 
-  const { data: studentRes, isLoading } = useQuery(["admin-students-list", search], () => studentAPI.getAll({ limit: 50, search }));
+  const { data: studentRes, isLoading } = useQuery(["admin-students-list", search, page], () => studentAPI.getAll({ page, limit: 20, search }));
+  const { data: unassignedRes } = useQuery("admin-unassigned-students", () => studentAPI.getAll({ limit: 9999, unassigned: true }), { enabled: activeTab === "allotment" });
   const { data: availableRoomsRes }     = useQuery("admin-available-rooms", () => roomAPI.getAll({ limit: 9999 }), { enabled: !!assignTarget });
 
   const students = studentRes?.data?.data || [];
+  const studentMeta = studentRes?.data?.meta;
   const availableRooms = (availableRoomsRes?.data?.data || []).filter(r => r.status !== "MAINTENANCE" && r.occupancy < r.capacity);
 
-  const unassignedStudents = students.filter((student) => !student.room);
+  const unassignedStudents = unassignedRes?.data?.data || [];
   const selectedStudent    = students.find((student) => student.id === prefForm.studentId) || unassignedStudents[0] || students[0];
 
   const allotmentMutation = useMutation(roomAPI.runAllotment, {
@@ -44,7 +47,10 @@ export default function AdminStudents() {
       setRankedRooms([]);
       setAssignTarget(null);
       qc.invalidateQueries("admin-students-list");
+      qc.invalidateQueries("admin-unassigned-students");
       qc.invalidateQueries("admin-available-rooms");
+      qc.invalidateQueries("warden-all-rooms");
+      qc.invalidateQueries("room-stats"); qc.invalidateQueries("floor-occupancy"); qc.invalidateQueries("warden-floor-occupancy"); qc.invalidateQueries("dashboard-stats"); qc.invalidateQueries("warden-dash-stats");
     },
     onError: (e) => toast.error(e.response?.data?.message || "Room assignment failed"),
   });
@@ -53,6 +59,10 @@ export default function AdminStudents() {
     onSuccess: () => {
       toast.success("Student unassigned from room");
       qc.invalidateQueries("admin-students-list");
+      qc.invalidateQueries("admin-unassigned-students");
+      qc.invalidateQueries("admin-available-rooms");
+      qc.invalidateQueries("warden-all-rooms");
+      qc.invalidateQueries("room-stats"); qc.invalidateQueries("floor-occupancy"); qc.invalidateQueries("warden-floor-occupancy"); qc.invalidateQueries("dashboard-stats"); qc.invalidateQueries("warden-dash-stats");
     },
     onError: (e) => toast.error(e.response?.data?.message || "Unassign failed"),
   });
@@ -91,7 +101,7 @@ export default function AdminStudents() {
                 className="form-input search-input"
                 placeholder="Search students by name, roll no, email..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => { setSearch(e.target.value); setPage(1); }}
               />
             </div>
           </div>
@@ -159,6 +169,7 @@ export default function AdminStudents() {
               </tbody>
             </table>
           </div>
+          {studentMeta && <div className="pagination"><span className="pagination-info">Showing {students.length} of {studentMeta.total} students</span><div className="pagination-controls"><button className="btn btn-secondary btn-sm" disabled={!studentMeta.hasPrevPage} onClick={() => setPage((p) => p - 1)}>Previous</button><span>Page {studentMeta.page} of {Math.max(studentMeta.totalPages, 1)}</span><button className="btn btn-secondary btn-sm" disabled={!studentMeta.hasNextPage} onClick={() => setPage((p) => p + 1)}>Next</button></div></div>}
         </div>
       )}
 
